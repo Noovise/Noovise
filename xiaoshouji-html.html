@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>小手机</title>
+<style>
+/* ===== 完整样式（与之前相同，未改动） ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+:root{--bg:#f2f2f7;--card:#fff;--text:#000;--text2:#8e8e93;--border:#e5e5e5;--shadow:0 2px 12px rgba(0,0,0,0.08);--tabbar:#f9f9f9;--bubble-mine:#007AFF;--bubble-theirs:#e9e9eb;--nav-bar:rgba(255,255,255,0.8);--line-green:#06C755;--line-bg:#fff;--bg-secondary:#f0f0f5;--am-accent:#FF2D55}
+[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--text:#fff;--text2:#8e8e93;--border:#38383a;--shadow:0 2px 12px rgba(0,0,0,0.4);--tabbar:#1c1c1e;--bubble-mine:#0a84ff;--bubble-theirs:#2c2c2e;--nav-bar:rgba(28,28,30,0.8);--line-bg:#1a1a1a;--bg-secondary:#2c2c2e;--am-accent:#FF375F}
+html,body{height:100%;overflow:hidden;background:#000;font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;color:var(--text)}
+#phone{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);transform-origin:center center;width:430px;height:932px;background:#000;border-radius:28px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6);transition:border-radius 0.3s}
+@media (max-width:500px){#phone{border-radius:0}}
+.toast{position:absolute;top:60px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(0,0,0,0.78);color:#fff;padding:10px 22px;border-radius:12px;font-size:14px;z-index:9999;pointer-events:none;opacity:0;transition:all 0.35s ease;backdrop-filter:blur(10px);max-width:85%;text-align:center;white-space:nowrap}
+/* 锁屏 */
+.lock-screen{position:absolute;inset:0;z-index:100;background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 30px;background-size:cover !important;background-position:center !important;transition:opacity 0.5s}
+.lock-screen.hidden{opacity:0;pointer-events:none}
+.lock-top{position:absolute;top:12px;left:24px;right:24px;display:flex;justify-content:space-between;color:#fff;font-size:14px;font-weight:600;opacity:0.8;animation:fadeDown 0.6s}
+.lock-time{font-size:72px;font-weight:200;color:#fff;letter-spacing:2px;margin-top:40px;animation:fadeIn 0.8s}
+.lock-date{font-size:18px;color:rgba(255,255,255,0.7);margin-top:4px;animation:fadeIn 1s}
+.lock-weather{font-size:16px;color:rgba(255,255,255,0.7);margin-top:6px;animation:fadeIn 1.2s}
+.lock-pwd{display:flex;gap:14px;margin:28px 0 8px}
+.lock-pwd .dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);transition:all 0.2s}
+.lock-pwd .dot.filled{background:#fff;border-color:#fff;transform:scale(1.15)}
+.lock-pwd .dot.error{background:#ff3b30;border-color:#ff3b30;animation:shake 0.3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.lock-error{color:#ff3b30;font-size:14px;height:22px;margin-top:2px}
+.lock-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;width:100%;margin-top:20px}
+.lock-key{background:rgba(255,255,255,0.15);border:none;border-radius:50%;aspect-ratio:1;color:#fff;font-size:28px;font-weight:300;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:0.15s;position:relative}
+.lock-key:active{background:rgba(255,255,255,0.3);transform:scale(0.92)}
+.lock-key .sub{font-size:10px;font-weight:400;opacity:0.6;letter-spacing:1px}
+.lock-key.empty{background:transparent;pointer-events:none}
+.lock-key.delete{font-size:24px}
+/* 桌面 */
+.desktop{position:absolute;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.4s;background-size:cover !important;background-position:center !important}
+.desktop.active{opacity:1;pointer-events:auto}
+.status{display:flex;justify-content:space-between;padding:8px 20px 4px;font-size:13px;font-weight:600;color:var(--text);background:transparent;animation:fadeDown 0.5s}
+.grid-wrap{flex:1;overflow-y:auto;padding:0 14px 8px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 8px}
+.app-icon{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:4px 0;position:relative;transition:transform 0.15s, opacity 0.15s}
+.app-icon .icon{width:60px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.12);background-size:cover !important;background-position:center !important;transition:transform 0.2s, box-shadow 0.2s}
+.app-icon .icon:hover{transform:scale(1.05);box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.app-icon .label{font-size:11px;color:var(--text);text-align:center;line-height:1.2;max-width:64px;word-break:break-word}
+.app-icon .badge{position:absolute;top:-4px;right:-4px;background:#ff3b30;color:#fff;font-size:11px;font-weight:600;min-width:18px;height:18px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.app-icon .delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ff3b30;color:#fff;font-size:12px;border:none;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.app-icon.jiggle{animation:jiggle 0.3s infinite alternate}
+.app-icon.jiggle .delete-btn{display:flex}
+@keyframes jiggle{0%{transform:rotate(-2deg)}100%{transform:rotate(2deg)}}
+.app-icon.dragging{opacity:0.7;transform:scale(1.05);z-index:10}
+.app-icon:active{transform:scale(0.92)}
+.dock{display:flex;justify-content:center;gap:16px;padding:8px 0 18px;background:rgba(255,255,255,0.4);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.2)}
+[data-theme="dark"] .dock{background:rgba(0,0,0,0.4);border-top-color:rgba(255,255,255,0.08)}
+/* 应用覆盖层 */
+.app-overlay{position:absolute;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.32,0.72,0,1)}
+.app-overlay.active{transform:translateY(0)}
+.nav{display:flex;align-items:center;padding:8px 12px;background:var(--nav-bar);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);min-height:44px;flex-shrink:0;animation:fadeDown 0.3s}
+.nav .back{font-size:28px;background:none;border:none;color:var(--text);cursor:pointer;padding:0 4px;line-height:1;transition:transform 0.15s}
+.nav .back:active{transform:scale(0.85)}
+.nav .title{flex:1;font-size:17px;font-weight:600;text-align:center;color:var(--text)}
+.nav .right{font-size:15px;font-weight:500;background:none;border:none;color:#007AFF;cursor:pointer;padding:4px 8px;transition:transform 0.15s}
+.nav .right:active{transform:scale(0.9)}
+.app-overlay .body{flex:1;overflow-y:auto;padding:12px 14px;animation:fadeIn 0.3s}
+/* 模态框 */
+.modal-overlay{position:absolute;inset:0;z-index:500;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--card);border-radius:16px;padding:24px;max-width:340px;width:90%;max-height:80vh;overflow-y:auto;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,0.3);transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-title{font-size:18px;font-weight:600;margin-bottom:16px;text-align:center}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.form-group input,.form-group textarea{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;outline:none;font-family:inherit;transition:border-color 0.2s}
+.form-group input:focus,.form-group textarea:focus{border-color:#007AFF}
+.btn{padding:10px 20px;border-radius:12px;border:none;font-size:15px;font-weight:500;cursor:pointer;transition:transform 0.15s, background 0.2s;margin:4px 0}
+.btn:active{transform:scale(0.94)}
+.btn-primary{background:#007AFF;color:#fff}
+.btn-secondary{background:var(--border);color:var(--text)}
+.btn-danger{background:#ff3b30;color:#fff}
+/* 通用组件 */
+.avatar-edit{position:relative;border-radius:50%;overflow:hidden;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;background-size:cover !important;background-position:center !important;transition:transform 0.2s}
+.avatar-edit:active{transform:scale(0.92)}
+.avatar-edit input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.setting-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);gap:8px;transition:background 0.15s}
+.setting-item:active{background:var(--bg-secondary)}
+.setting-item .label{font-size:15px;display:flex;align-items:center;gap:8px}
+.setting-item .toggle{width:44px;height:26px;border-radius:13px;background:#e5e5e5;position:relative;cursor:pointer;transition:0.25s;flex-shrink:0}
+.setting-item .toggle.on{background:#34C759}
+.setting-item .toggle::after{content:'';position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.setting-item .toggle.on::after{left:20px}
+/* Telegram */
+.tg-chat-list .item,.line-chat-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s, transform 0.15s}
+.tg-chat-list .item:active,.line-chat-item:active{transform:scale(0.97);background:var(--bg-secondary)}
+.tg-chat-list .item:hover,.line-chat-item:hover{background:var(--bg-secondary)}
+.tg-chat-list .item .avatar,.line-chat-item .avatar{width:48px;height:48px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0;background-size:cover !important;background-position:center !important}
+.tg-chat-list .item .info{flex:1;min-width:0}
+.tg-chat-list .item .name{font-weight:600;font-size:15px}
+.tg-chat-list .item .last{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg-chat-list .item .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12px;color:var(--text2);flex-shrink:0}
+.tg-chat-list .item .badge{background:#007AFF;color:#fff;border-radius:10px;padding:0 8px;font-size:12px;font-weight:600;min-width:18px;text-align:center}
+.tg-tabbar,.phone-tabs,.line-tabbar{display:flex;border-top:1px solid var(--border);background:var(--tabbar);flex-shrink:0}
+.tg-tabbar .tab,.phone-tabs .tab,.line-tabbar .tab{flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:500;background:none;border:none;color:var(--text2);cursor:pointer;transition:0.15s;border-bottom:2px solid transparent}
+.tg-tabbar .tab:active,.phone-tabs .tab:active,.line-tabbar .tab:active{transform:scale(0.94)}
+.tg-tabbar .tab.active,.phone-tabs .tab.active,.line-tabbar .tab.active{color:#007AFF;border-bottom-color:#007AFF}
+.tg-chat-window{display:flex;flex-direction:column;height:100%}
+.tg-chat-window .msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px;background:var(--line-bg)}
+.msg-wrapper{display:flex;flex-direction:column;max-width:78%;animation:msgAppear 0.3s ease-out}
+@keyframes msgAppear{0%{opacity:0;transform:translateY(15px) scale(0.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.msg-wrapper.mine{align-self:flex-end}
+.msg-wrapper.theirs{align-self:flex-start}
+.msg-wrapper .bubble{padding:8px 14px;border-radius:16px;font-size:15px;line-height:1.4;word-break:break-word}
+.msg-wrapper.mine .bubble{background:var(--bubble-mine);color:#fff;border-bottom-right-radius:4px}
+.msg-wrapper.theirs .bubble{background:var(--bubble-theirs);color:var(--text);border-bottom-left-radius:4px}
+.msg-wrapper .time{font-size:10px;color:var(--text2);margin-top:2px;padding:0 6px;align-self:flex-end}
+.tg-chat-window .input{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--nav-bar);border-top:1px solid var(--border);flex-shrink:0}
+.tg-chat-window .input input{flex:1;padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;outline:none;transition:border-color 0.2s}
+.tg-chat-window .input input:focus{border-color:#007AFF}
+.tg-chat-window .input button{background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:var(--text);transition:transform 0.15s}
+.tg-chat-window .input button:active{transform:scale(0.85)}
+.tg-chat-window .input .send{background:#007AFF;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+.tg-chat-window .input .voice.recording{color:#ff3b30;animation:pulse 1s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.4}100%{opacity:1}}
+/* 论坛 */
+.forum-post{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);transition:transform 0.15s, box-shadow 0.15s;animation:slideUp 0.35s ease-out}
+@keyframes slideUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.forum-post:active{transform:scale(0.98)}
+.forum-post .header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.forum-post .header .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;background-size:cover !important;background-position:center !important}
+.forum-post .header .name{font-weight:600;font-size:14px}
+.forum-post .header .time{font-size:12px;color:var(--text2);margin-left:auto}
+.forum-post .title{font-size:17px;font-weight:600;margin:4px 0}
+.forum-post .body{font-size:14px;color:var(--text);margin:6px 0;line-height:1.5}
+.forum-post .body img{max-width:100%;border-radius:8px;margin-top:6px}
+.forum-post .actions{display:flex;gap:16px;font-size:14px;color:var(--text2);padding:8px 0 4px;border-top:1px solid var(--border);margin-top:8px}
+.forum-post .actions span{cursor:pointer;display:flex;align-items:center;gap:4px;transition:transform 0.15s}
+.forum-post .actions span:active{transform:scale(0.9)}
+.forum-post .comments{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.forum-post .comments .c{display:flex;gap:8px;margin-bottom:6px;font-size:13px;align-items:flex-start}
+.forum-post .comments .c .avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background-size:cover !important;background-position:center !important;flex-shrink:0}
+.forum-post .comments .comment-input{display:flex;gap:6px;margin-top:6px}
+.forum-post .comments .comment-input input{flex:1;padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;outline:none}
+.forum-post .comments .comment-input button{padding:4px 14px;border-radius:16px;background:#007AFF;color:#fff;border:none;font-size:13px;cursor:pointer;transition:transform 0.15s}
+.forum-post .comments .comment-input button:active{transform:scale(0.9)}
+/* 相册 */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.photo-item{position:relative;aspect-ratio:1;overflow:hidden;border-radius:4px;background:var(--bg-secondary);transition:transform 0.15s}
+.photo-item:active{transform:scale(0.96)}
+.photo-item img{width:100%;height:100%;object-fit:cover;animation:fadeIn 0.5s}
+@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+.photo-item .del-btn{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;font-size:14px;display:none;align-items:center;justify-content:center;cursor:pointer}
+.photo-item.longpress .del-btn{display:flex}
+/* ===== Apple Music ===== */
+.am-container{display:flex;flex-direction:column;height:100%;gap:6px}
+.am-library{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding-bottom:8px;max-height:40vh}
+.am-track-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:transform 0.15s, background 0.15s, box-shadow 0.15s;position:relative;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,0.06);animation:slideUp 0.25s ease-out}
+.am-track-item:active{transform:scale(0.96);background:var(--bg-secondary)}
+.am-track-item:hover{background:var(--bg-secondary)}
+.am-track-item .cover{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg-secondary);flex-shrink:0;background-size:cover !important;background-position:center !important;transition:transform 0.3s ease}
+.am-track-item:hover .cover{transform:scale(1.04)}
+.am-track-item .info{flex:1;min-width:0}
+.am-track-item .info .name{font-weight:600;font-size:14px}
+.am-track-item .info .artist{font-size:12px;color:var(--text2)}
+.am-track-item .play-indicator{font-size:18px;margin-right:4px;animation:spin 2s linear infinite}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.am-track-item .delete-btn{background:#ff3b30;color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;transition:transform 0.2s}
+.am-track-item.swiped .delete-btn{display:flex}
+.am-track-item .delete-btn:active{transform:scale(0.8)}
+.am-empty{text-align:center;padding:30px 0;color:var(--text2)}
+.am-empty .icon{font-size:48px;margin-bottom:8px;opacity:0.5;animation:float 3s ease-in-out infinite}
+.am-empty .hint{font-size:14px}
+/* 播放控制栏 */
+.am-player-bar{display:flex;flex-direction:column;padding:10px 12px 12px;background:var(--card);border-radius:16px;box-shadow:0 -4px 20px rgba(0,0,0,0.06);border-top:1px solid var(--border);flex-shrink:0;gap:6px;transition:all 0.3s ease}
+.am-player-bar .top{display:flex;align-items:center;gap:12px}
+.am-player-bar .cover{width:48px;height:48px;border-radius:10px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background-size:cover !important;background-position:center !important;transition:transform 0.4s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.am-player-bar .cover.playing{animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0px) scale(1)}50%{transform:translateY(-4px) scale(1.02)}}
+.am-player-bar .info{flex:1;min-width:0}
+.am-player-bar .info .name{font-weight:600;font-size:15px}
+.am-player-bar .info .artist{font-size:12px;color:var(--text2)}
+.am-player-bar .progress-wrap{width:100%;height:4px;background:var(--border);cursor:pointer;position:relative;border-radius:4px;overflow:hidden;transition:height 0.2s}
+.am-player-bar .progress-wrap:hover{height:6px}
+.am-player-bar .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--am-accent),#FF6B8A);border-radius:4px;transition:width 0.15s ease;position:relative}
+.am-player-bar .progress-fill::after{content:'';position:absolute;right:-4px;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--am-accent);opacity:0;transition:opacity 0.2s}
+.am-player-bar .progress-wrap:hover .progress-fill::after{opacity:1}
+.am-player-bar .time-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:1px}
+.am-player-bar .controls{display:flex;align-items:center;justify-content:center;gap:18px;padding-top:4px}
+.am-player-bar .controls button{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text);padding:4px 6px;transition:transform 0.2s;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.am-player-bar .controls button:active{transform:scale(0.82)}
+.am-player-bar .controls .play-btn{font-size:34px;color:var(--am-accent);width:52px;height:52px;background:var(--bg-secondary);border-radius:50%;box-shadow:0 4px 16px rgba(255,45,85,0.2);transition:transform 0.3s, box-shadow 0.3s}
+.am-player-bar .controls .play-btn:active{transform:scale(0.88);box-shadow:0 2px 8px rgba(255,45,85,0.15)}
+.am-player-bar .controls .loop-btn{font-size:18px;color:var(--text2);transition:all 0.3s}
+.am-player-bar .controls .loop-btn.active{color:var(--am-accent);animation:glow 1.5s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:0.5}}
+.am-volume-wrap{display:flex;align-items:center;gap:8px;padding:2px 4px}
+.am-volume-wrap .vol-icon{font-size:16px;color:var(--text2)}
+.am-volume-wrap input[type="range"]{flex:1;-webkit-appearance:none;height:3px;border-radius:4px;background:var(--border);outline:none;transition:height 0.2s}
+.am-volume-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--am-accent);cursor:pointer;box-shadow:0 2px 8px rgba(255,45,85,0.3);transition:transform 0.2s}
+.am-volume-wrap input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+/* 其他原有样式（电话、Line、Safari等）*/
+.phone-dial{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.phone-dial .number{font-size:36px;font-weight:300;letter-spacing:4px;height:52px;margin-bottom:16px;color:var(--text)}
+.phone-dial .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;width:100%}
+.phone-dial .key{background:var(--bg-secondary);border:none;border-radius:50%;aspect-ratio:1;font-size:24px;font-weight:300;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--text);transition:transform 0.15s, background 0.15s}
+.phone-dial .key:active{transform:scale(0.9);background:var(--border)}
+.phone-dial .key .sub{font-size:9px;font-weight:400;color:var(--text2)}
+.phone-dial .key.empty{background:transparent;pointer-events:none}
+.phone-dial .call-btn{width:64px;height:64px;border-radius:50%;background:#34C759;border:none;font-size:28px;color:#fff;margin-top:20px;cursor:pointer;box-shadow:0 4px 16px rgba(52,199,89,0.4);transition:transform 0.15s}
+.phone-dial .call-btn:active{transform:scale(0.88)}
+.phone-call-screen{position:absolute;inset:0;z-index:300;background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;color:#fff;animation:fadeIn 0.3s}
+.phone-call-screen .avatar{width:80px;height:80px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;font-size:36px}
+.phone-call-screen .name{font-size:24px;font-weight:500}
+.phone-call-screen .status{font-size:16px;color:rgba(255,255,255,0.6)}
+.phone-call-screen .actions{display:flex;gap:40px;margin-top:20px}
+.phone-call-screen .actions button{width:64px;height:64px;border-radius:50%;border:none;font-size:28px;cursor:pointer;transition:transform 0.15s}
+.phone-call-screen .actions button:active{transform:scale(0.88)}
+.phone-call-screen .actions .mute{background:#555}
+.phone-call-screen .actions .end{background:#ff3b30;color:#fff}
+.phone-contact-list .item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:transform 0.15s, background 0.15s}
+.phone-contact-list .item:active{transform:scale(0.97);background:var(--bg-secondary)}
+.phone-contact-list .item .avatar{width:36px;height:36px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.line-msg-wrapper{display:flex;flex-direction:column;max-width:78%;margin-bottom:4px;animation:msgAppear 0.25s ease-out}
+.line-msg-wrapper.mine{align-self:flex-end}
+.line-msg-wrapper.theirs{align-self:flex-start}
+.line-msg-wrapper .bubble{padding:8px 14px;border-radius:16px;font-size:15px;line-height:1.4;word-break:break-word}
+.line-msg-wrapper.mine .bubble{background:#06C755;color:#fff;border-bottom-right-radius:4px}
+.line-msg-wrapper.theirs .bubble{background:var(--bubble-theirs);color:var(--text);border-bottom-left-radius:4px}
+.line-msg-wrapper .time{font-size:10px;color:var(--text2);margin-top:2px;padding:0 6px;align-self:flex-end}
+.meituan-shop{display:flex;align-items:center;gap:12px;padding:12px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:transform 0.15s, background 0.15s}
+.meituan-shop:active{transform:scale(0.97);background:var(--bg-secondary)}
+.meituan-shop .icon{font-size:32px}
+.meituan-shop .info{flex:1}
+.meituan-shop .name{font-weight:600}
+.meituan-shop .desc{font-size:13px;color:var(--text2)}
+.meituan-shop .price{font-weight:500;color:#ff3b30}
+.colourful-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px}
+.colourful-grid .color-block{aspect-ratio:1;border-radius:12px;cursor:pointer;transition:transform 0.15s}
+.colourful-grid .color-block:active{transform:scale(0.9)}
+.safari-search{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--nav-bar);border-bottom:1px solid var(--border)}
+.safari-search .logo{font-size:28px}
+.safari-search .search-box{flex:1;display:flex;background:var(--bg-secondary);border-radius:20px;padding:4px 12px;align-items:center}
+.safari-search .search-box input{flex:1;border:none;background:transparent;padding:6px 0;font-size:15px;outline:none;color:var(--text)}
+.safari-search .search-box button{background:none;border:none;font-size:18px;cursor:pointer;padding:0 4px;color:var(--text2);transition:transform 0.15s}
+.safari-search .search-box button:active{transform:scale(0.85)}
+.safari-result{flex:1;overflow:hidden}
+.safari-result iframe{width:100%;height:100%;border:none}
+.appstore-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card);border-radius:12px;box-shadow:var(--shadow);transition:transform 0.15s}
+.appstore-item:active{transform:scale(0.97)}
+.appstore-item .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;background-size:cover !important;background-position:center !important}
+.appstore-item .info{flex:1}
+.appstore-item .name{font-weight:600;font-size:15px}
+.appstore-item .desc{font-size:12px;color:var(--text2)}
+.appstore-item .btn{padding:6px 16px;border-radius:16px;border:none;color:#fff;font-size:13px;font-weight:500;cursor:pointer;transition:transform 0.15s}
+.appstore-item .btn:active{transform:scale(0.9)}
+.memo-list .item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:transform 0.15s, background 0.15s}
+.memo-list .item:active{transform:scale(0.97);background:var(--bg-secondary)}
+.memo-list .item .title{font-weight:600;font-size:15px}
+.memo-list .item .preview{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.memo-list .item .time{font-size:11px;color:var(--text2);margin-top:2px}
+.memory-item{display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);gap:8px}
+.memory-item .text{flex:1;font-size:14px;word-break:break-word}
+.memory-item .del{color:#ff3b30;cursor:pointer;font-size:16px;padding:0 4px;transition:transform 0.15s}
+.memory-item .del:active{transform:scale(0.8)}
+.memory-edit-input{flex:1;background:transparent;border:none;color:var(--text);font-size:14px;outline:none}
+.voice-slider{width:100%;margin:4px 0}
+.voice-slider input[type="range"]{width:100%}
+/* ===== 通用动画关键帧 ===== */
+@keyframes fadeDown{0%{opacity:0;transform:translateY(-20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+@keyframes slideUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes msgAppear{0%{opacity:0;transform:translateY(15px) scale(0.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0px) scale(1)}50%{transform:translateY(-4px) scale(1.02)}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:0.5}}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.4}100%{opacity:1}}
+@keyframes jiggle{0%{transform:rotate(-2deg)}100%{transform:rotate(2deg)}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--text2);border-radius:10px}
+</style>
+</head>
+<body>
+<div id="phone">
+    <div class="toast" id="toast"></div>
+    <!-- 锁屏 -->
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-top"><span class="time" id="lockStatusTime">00:00</span><span class="icons" id="lockStatusIcons">📶 🔋</span></div>
+        <div class="lock-time" id="lockTime">00:00</div>
+        <div class="lock-date" id="lockDate">----年--月--日</div>
+        <div class="lock-weather" id="lockWeather">🌤️ 加载中...</div>
+        <div class="lock-pwd" id="lockDots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="lock-error" id="lockError"></div>
+        <div class="lock-keypad" id="lockKeypad">
+            <button class="lock-key" data-key="1">1<span class="sub"></span></button>
+            <button class="lock-key" data-key="2">2<span class="sub">ABC</span></button>
+            <button class="lock-key" data-key="3">3<span class="sub">DEF</span></button>
+            <button class="lock-key" data-key="4">4<span class="sub">GHI</span></button>
+            <button class="lock-key" data-key="5">5<span class="sub">JKL</span></button>
+            <button class="lock-key" data-key="6">6<span class="sub">MNO</span></button>
+            <button class="lock-key" data-key="7">7<span class="sub">PQRS</span></button>
+            <button class="lock-key" data-key="8">8<span class="sub">TUV</span></button>
+            <button class="lock-key" data-key="9">9<span class="sub">WXYZ</span></button>
+            <button class="lock-key empty"></button>
+            <button class="lock-key" data-key="0">0<span class="sub">+</span></button>
+            <button class="lock-key delete" data-key="delete">⌫</button>
+        </div>
+    </div>
+    <!-- 桌面 -->
+    <div class="desktop" id="desktop">
+        <div class="status"><span class="time" id="deskTime">00:00</span><span class="icons" id="deskIcons">📶 📶 🔋</span></div>
+        <div class="grid-wrap"><div class="grid" id="appGrid"></div></div>
+        <div class="dock" id="dock"></div>
+    </div>
+    <!-- 应用覆盖层 -->
+    <div class="app-overlay" id="appOverlay">
+        <div class="nav" id="appNav">
+            <button class="back" id="appBack">‹</button>
+            <span class="title" id="appTitle">应用</span>
+            <button class="right" id="appRight" style="display:none;">完成</button>
+        </div>
+        <div class="body" id="appBody"></div>
+    </div>
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalContent"></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/music-metadata-browser@7.2.6/dist/index.min.js"></script>
+<script>
+(function(){
+    'use strict';
+
+    // ===== 自适应缩放 =====
+    function scalePhone(){var phone=document.getElementById('phone');var winW=window.innerWidth;var winH=window.innerHeight;var baseW=430;var baseH=932;var scaleX=winW/baseW;var scaleY=winH/baseH;var scale=Math.min(scaleX,scaleY);scale=Math.min(scale,1);phone.style.transform='translate(-50%,-50%) scale('+scale+')';if(winW<500||winH<800){phone.style.borderRadius='0'}else{phone.style.borderRadius='28px'}}
+    window.addEventListener('load',scalePhone);window.addEventListener('resize',scalePhone);window.addEventListener('orientationchange',function(){setTimeout(scalePhone,200)});
+
+    // ===== 状态（修复：确保 voiceClones 初始化） =====
+    const S={
+        theme: localStorage.getItem('phone_theme')||'dark',
+        unlocked: false,
+        passcode: localStorage.getItem('phone_passcode')||'258369',
+        paymentPasscode: localStorage.getItem('phone_payment_passcode')||'258369',
+        apps: JSON.parse(localStorage.getItem('phone_apps')||'[]'),
+        dockApps: ['chat','forum','camera','settings'],
+        profile: JSON.parse(localStorage.getItem('phone_profile')||'{"name":"我","bio":"自定义人设","avatar":"🧑","avatarData":null}'),
+        aiConfig: JSON.parse(localStorage.getItem('phone_ai_config')||'{"apiKey":"","model":"deepseek-chat","persona":"你是一个友好的AI助手。","aiName":"AI助手","aiAvatar":"🤖","aiAvatarData":null}'),
+        voiceConfig: JSON.parse(localStorage.getItem('phone_voice_config')||'{"pitch":1,"rate":1,"voiceName":"","enabled":true}'),
+        voiceClones: JSON.parse(localStorage.getItem('phone_voice_clones')||'[]'),
+        chats: JSON.parse(localStorage.getItem('phone_chats')||'[]'),
+        messages: JSON.parse(localStorage.getItem('phone_messages')||'{}'),
+        memories: JSON.parse(localStorage.getItem('phone_memories')||'{}'),
+        posts: JSON.parse(localStorage.getItem('phone_posts')||'[]'),
+        photos: JSON.parse(localStorage.getItem('phone_photos')||'[]'),
+        currentChatId: null,
+        wifi: true, bt: true, hotspot: false,
+        wallpaper: { lock: null, home: null },
+        voiceRec: null,
+        isRecording: false,
+        _weatherFetched: false,
+        contacts: JSON.parse(localStorage.getItem('phone_contacts')||'[]'),
+        callHistory: JSON.parse(localStorage.getItem('phone_call_history')||'[]'),
+        appleMusic: JSON.parse(localStorage.getItem('phone_apple_music')||'[]'),
+        lineChats: JSON.parse(localStorage.getItem('phone_line_chats')||'[]'),
+        lineMessages: JSON.parse(localStorage.getItem('phone_line_messages')||'{}'),
+        memos: JSON.parse(localStorage.getItem('phone_memos')||'[]'),
+        meituanOrders: JSON.parse(localStorage.getItem('phone_meituan_orders')||'[]'),
+        iconCustom: JSON.parse(localStorage.getItem('phone_icon_custom')||'{}'),
+        searchEngine: localStorage.getItem('phone_search_engine')||'https://www.baidu.com/s?wd=',
+        amPlayingIndex: -1,
+        amAudio: null,
+        amPlaying: false,
+        amTimer: null,
+        amLoop: 'none',
+        amVolume: 0.8,
+        blockedContacts: JSON.parse(localStorage.getItem('phone_blocked')||'{}'),
+        blockIntervals: {},
+        tgTab: 'chats',
+        _pendingInputs: {},
+        _currentMsgArea: null,
+        // 新增：锁屏尝试次数
+        lockAttempts: 0,
+        lockLockedUntil: null,
+    };
+
+    // ===== 核心应用列表 =====
+    var coreApps = [
+        {id:'chat',name:'Telegram',icon:'💬',color:'#007AFF'},
+        {id:'forum',name:'论坛',icon:'📰',color:'#34C759'},
+        {id:'phone',name:'电话',icon:'📞',color:'#34C759'},
+        {id:'safari',name:'Safari',icon:'🌐',color:'#007AFF'},
+        {id:'camera',name:'相机',icon:'📷',color:'#FF2D55'},
+        {id:'photos',name:'相册',icon:'🖼️',color:'#FF9500'},
+        {id:'settings',name:'设置',icon:'⚙️',color:'#8E8E93'},
+        {id:'appstore',name:'App Store',icon:'📦',color:'#007AFF'},
+    ];
+    var storeApps = [
+        {id:'applemusic',name:'Apple Music',icon:'🎵',color:'#FF2D55',desc:'单页音乐播放器'},
+        {id:'memo',name:'记事簿',icon:'📝',color:'#FFCC00',desc:'仿iOS备忘录'},
+        {id:'line',name:'Line',icon:'💚',color:'#06C755',desc:'即时通讯'},
+        {id:'meituan',name:'美团外卖',icon:'🍱',color:'#FFC300',desc:'点外卖'},
+        {id:'colourful',name:'Colourful',icon:'🎨',color:'#8B5CF6',desc:'自定义图标'},
+    ];
+    if(S.apps.length===0){S.apps=coreApps.map(function(a){return {id:a.id,name:a.name,icon:a.icon,color:a.color};});save();}else{coreApps.forEach(function(def){if(!S.apps.find(function(a){return a.id===def.id})){S.apps.push({id:def.id,name:def.name,icon:def.icon,color:def.color});}});S.apps=S.apps.filter(function(a){return a.id!=='musicplayer'&&a.id!=='notes';});save();}
+
+    // ===== DOM =====
+    var $=function(id){return document.getElementById(id);};
+    var lockScreen=$('lockScreen');var desk=$('desktop');var appGrid=$('appGrid');var dock=$('dock');var appOverlay=$('appOverlay');var appBody=$('appBody');var appTitle=$('appTitle');var appBack=$('appBack');var appRight=$('appRight');var toast=$('toast');var modalOverlay=$('modalOverlay');var modalContent=$('modalContent');var lockDots=$('lockDots');
+
+    // ===== 工具 =====
+    function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+    function save(){
+        localStorage.setItem('phone_apps',JSON.stringify(S.apps));
+        localStorage.setItem('phone_profile',JSON.stringify(S.profile));
+        localStorage.setItem('phone_ai_config',JSON.stringify(S.aiConfig));
+        localStorage.setItem('phone_voice_config',JSON.stringify(S.voiceConfig));
+        localStorage.setItem('phone_voice_clones',JSON.stringify(S.voiceClones));
+        localStorage.setItem('phone_chats',JSON.stringify(S.chats));
+        localStorage.setItem('phone_messages',JSON.stringify(S.messages));
+        localStorage.setItem('phone_memories',JSON.stringify(S.memories));
+        localStorage.setItem('phone_posts',JSON.stringify(S.posts));
+        localStorage.setItem('phone_photos',JSON.stringify(S.photos));
+        localStorage.setItem('phone_theme',S.theme);
+        localStorage.setItem('phone_contacts',JSON.stringify(S.contacts));
+        localStorage.setItem('phone_call_history',JSON.stringify(S.callHistory));
+        localStorage.setItem('phone_apple_music',JSON.stringify(S.appleMusic));
+        localStorage.setItem('phone_line_chats',JSON.stringify(S.lineChats));
+        localStorage.setItem('phone_line_messages',JSON.stringify(S.lineMessages));
+        localStorage.setItem('phone_memos',JSON.stringify(S.memos));
+        localStorage.setItem('phone_meituan_orders',JSON.stringify(S.meituanOrders));
+        localStorage.setItem('phone_icon_custom',JSON.stringify(S.iconCustom));
+        localStorage.setItem('phone_passcode',S.passcode);
+        localStorage.setItem('phone_payment_passcode',S.paymentPasscode);
+        localStorage.setItem('phone_search_engine',S.searchEngine);
+        localStorage.setItem('phone_blocked',JSON.stringify(S.blockedContacts));
+    }
+    function showToast(msg,dur){dur=dur||2200;toast.textContent=msg;toast.style.opacity='1';toast.style.transform='translateX(-50%) translateY(0)';clearTimeout(toast._t);toast._t=setTimeout(function(){toast.style.opacity='0';toast.style.transform='translateX(-50%) translateY(10px)';},dur);}
+    function formatTime(d){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+    function formatDate(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+['日','一','二','三','四','五','六'][d.getDay()];}
+    function generateUSPhone(){var area=Math.floor(Math.random()*900+100);var prefix=Math.floor(Math.random()*900+100);var line=Math.floor(Math.random()*9000+1000);return '+1 ('+area+') '+prefix+'-'+line;}
+
+    // ===== 时间 & 天气 =====
+    function updateClock(){var now=new Date();var t=formatTime(now);document.querySelectorAll('.status .time, #lockStatusTime, #lockTime, #deskTime').forEach(function(el){if(el)el.textContent=t;});var d=formatDate(now);if($('lockDate'))$('lockDate').textContent=d;if(!S._weatherFetched){fetchWeather();S._weatherFetched=true;}if(navigator.getBattery){navigator.getBattery().then(function(b){var p=Math.round(b.level*100);document.querySelectorAll('.icons, #lockStatusIcons, #deskIcons').forEach(function(el){if(el)el.textContent='📶 '+(b.charging?'⚡':'🔋')+p+'%';});});}}
+    setInterval(updateClock,10000);updateClock();
+
+    function fetchWeather(){if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(pos){var lat=pos.coords.latitude,lon=pos.coords.longitude;fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current_weather=true&timezone=auto').then(function(r){return r.json();}).then(function(data){var w=data.current_weather;var temp=Math.round(w.temperature);var code=w.weathercode;var emoji=code<=1?'☀️':code<=3?'⛅':code<=45?'🌫️':code<=55?'🌧️':code<=65?'🌧️':code<=80?'🌦️':code<=99?'⛈️':'🌤️';var wd=document.getElementById('lockWeather');if(wd)wd.textContent=emoji+' '+temp+'°C';}).catch(function(){fallbackWeather();});},function(){fallbackWeather();});}else{fallbackWeather();}}
+    function fallbackWeather(){fetch('https://api.open-meteo.com/v1/forecast?latitude=39.9&longitude=116.4&current_weather=true').then(function(r){return r.json();}).then(function(data){var w=data.current_weather;var temp=Math.round(w.temperature);var wd=document.getElementById('lockWeather');if(wd)wd.textContent='🌤️ '+temp+'°C (北京)';}).catch(function(){var wd=document.getElementById('lockWeather');if(wd)wd.textContent='🌤️ 22°C (默认)';});}
+
+    // ===== 锁屏（修复：增加尝试次数限制） =====
+    var pwd='';
+    function updateDots(){var dots=lockDots.querySelectorAll('.dot');dots.forEach(function(d,i){d.classList.toggle('filled',i<pwd.length);d.classList.remove('error');});}
+    document.getElementById('lockKeypad').addEventListener('click',function(e){
+        var btn=e.target.closest('.lock-key');
+        if(!btn||lockScreen.classList.contains('hidden'))return;
+        // 检查是否锁定
+        if(S.lockLockedUntil && Date.now() < S.lockLockedUntil){
+            document.getElementById('lockError').textContent='尝试次数过多，请等待 ' + Math.ceil((S.lockLockedUntil - Date.now())/1000) + ' 秒';
+            return;
+        }
+        var key=btn.dataset.key;
+        if(key==='delete'){pwd=pwd.slice(0,-1);updateDots();return;}
+        if(key&&pwd.length<6){
+            pwd+=key;updateDots();
+            if(pwd.length===6){
+                if(pwd===S.passcode){
+                    S.lockAttempts=0;
+                    S.lockLockedUntil=null;
+                    unlock();
+                }else{
+                    S.lockAttempts++;
+                    lockDots.querySelectorAll('.dot').forEach(function(d){d.classList.add('error');});
+                    document.getElementById('lockError').textContent='密码错误，剩余尝试次数：'+(5-S.lockAttempts);
+                    pwd='';
+                    if(S.lockAttempts>=5){
+                        S.lockLockedUntil=Date.now()+60000; // 锁定60秒
+                        document.getElementById('lockError').textContent='尝试次数过多，锁定60秒';
+                    }
+                    setTimeout(function(){
+                        lockDots.querySelectorAll('.dot').forEach(function(d){d.classList.remove('error');});
+                        updateDots();
+                        if(!S.lockLockedUntil) document.getElementById('lockError').textContent='';
+                    },800);
+                }
+            }
+        }
+    });
+    function unlock(){if(S.unlocked)return;S.unlocked=true;lockScreen.classList.add('hidden');desk.classList.add('active');renderDesktop();showToast('已解锁');}
+
+    // ===== 编辑主屏幕 =====
+    var editMode=false;var dragData=null;
+    function toggleEditMode(on){editMode=on;if(!on){dragData=null;document.removeEventListener('pointermove',onPointerMove);document.removeEventListener('pointerup',onPointerUp);document.removeEventListener('pointercancel',onPointerUp);document.querySelectorAll('.app-icon.dragging').forEach(function(el){el.classList.remove('dragging');});}else{document.addEventListener('pointermove',onPointerMove);document.addEventListener('pointerup',onPointerUp);document.addEventListener('pointercancel',onPointerUp);showToast('长按图标可拖动排序，点击空白退出');}renderDesktop();if(on){appRight.style.display='block';appRight.textContent='完成';appRight.onclick=function(){toggleEditMode(false);};}else{appRight.style.display='none';}}
+    var longPressTimer=null;
+    function startLongPress(e){if(editMode)return;var target=e.target.closest('.app-icon');if(!target)return;e.stopPropagation();longPressTimer=setTimeout(function(){toggleEditMode(true);if(editMode){dragData={element:target,appId:target.dataset.appId};target.classList.add('dragging');}},600);}
+    function cancelLongPress(){clearTimeout(longPressTimer);}
+    function onPointerMove(e){if(!editMode||!dragData)return;var target=document.elementFromPoint(e.clientX,e.clientY);var icon=target?target.closest('.app-icon'):null;if(icon&&icon!==dragData.element&&icon.classList.contains('app-icon')){var allIcons=Array.from(document.querySelectorAll('.grid .app-icon, .dock .app-icon'));var fromIdx=allIcons.indexOf(dragData.element);var toIdx=allIcons.indexOf(icon);if(fromIdx!==-1&&toIdx!==-1){var appIdFrom=dragData.appId;var appIdTo=icon.dataset.appId;var fromAppIdx=S.apps.findIndex(function(a){return a.id===appIdFrom});var toAppIdx=S.apps.findIndex(function(a){return a.id===appIdTo});if(fromAppIdx!==-1&&toAppIdx!==-1){var temp=S.apps[fromAppIdx];S.apps[fromAppIdx]=S.apps[toAppIdx];S.apps[toAppIdx]=temp;save();renderDesktop();dragData.element=document.querySelector('.app-icon[data-app-id="'+appIdFrom+'"]');if(dragData.element)dragData.element.classList.add('dragging');}}}}
+    function onPointerUp(e){if(dragData&&dragData.element){dragData.element.classList.remove('dragging');dragData=null;}}
+    document.addEventListener('pointerdown',function(e){if(e.target.closest('.app-icon')){startLongPress(e);}});
+    document.addEventListener('pointerup',cancelLongPress);document.addEventListener('pointercancel',cancelLongPress);
+    // 修复：点击 grid-wrap 空白处也能退出编辑模式
+    desk.addEventListener('click',function(e){
+        if(editMode && (e.target===this || e.target===appGrid || e.target.classList.contains('grid-wrap') || e.target.tagName==='DIV' && e.target.parentNode===appGrid)){
+            toggleEditMode(false);
+        }
+    });
+
+    // ===== 渲染桌面 =====
+    function renderDesktop(){appGrid.innerHTML='';S.apps.forEach(function(app){var el=document.createElement('button');el.className='app-icon'+(editMode?' jiggle':'');el.dataset.appId=app.id;var iconData=S.iconCustom[app.id];var iconStyle=iconData?'background-image:url('+iconData+');background-size:cover;background-position:center;':'background:'+(app.color||'#555')+';';el.innerHTML='<div class="icon" style="'+iconStyle+'">'+(iconData?'':(app.icon||'📱'))+(app.badge?'<span class="badge">'+app.badge+'</span>':'')+'<span class="delete-btn" data-id="'+app.id+'">✕</span></div><span class="label">'+app.name+'</span>';el.addEventListener('click',function(e){if(editMode){e.stopPropagation();return;}openApp(app.id);});var del=el.querySelector('.delete-btn');if(del){del.addEventListener('click',function(e){e.stopPropagation();if(confirm('删除 '+app.name+' 及其所有数据？')){// 删除应用及关联数据
+                        S.apps=S.apps.filter(function(a){return a.id!==app.id;});
+                        delete S.iconCustom[app.id];
+                        // 清除关联数据
+                        if(app.id==='chat' || app.id==='line'){
+                            delete S.messages[app.id];
+                            delete S.memories[app.id];
+                            delete S.lineMessages[app.id];
+                            S.chats=S.chats.filter(function(c){return c.id!==app.id;});
+                            S.lineChats=S.lineChats.filter(function(c){return c.id!==app.id;});
+                        }
+                        // 从Dock移除
+                        S.dockApps=S.dockApps.filter(function(d){return d!==app.id;});
+                        save();renderDesktop();showToast('已删除');}});}appGrid.appendChild(el);});dock.innerHTML='';S.dockApps.forEach(function(id){var app=S.apps.find(function(a){return a.id===id;});if(!app)return;var el=document.createElement('button');el.className='app-icon'+(editMode?' jiggle':'');el.dataset.appId=app.id;var iconData=S.iconCustom[app.id];var iconStyle=iconData?'background-image:url('+iconData+');background-size:cover;background-position:center;':'background:'+(app.color||'#555')+';';el.innerHTML='<div class="icon" style="'+iconStyle+'">'+(iconData?'':(app.icon||'📱'))+'<span class="delete-btn" data-id="'+app.id+'">✕</span></div><span class="label">'+app.name+'</span>';el.addEventListener('click',function(e){if(editMode){e.stopPropagation();return;}openApp(app.id);});var del=el.querySelector('.delete-btn');if(del){del.addEventListener('click',function(e){e.stopPropagation();if(confirm('从Dock删除 '+app.name+'?')){S.dockApps=S.dockApps.filter(function(d){return d!==app.id;});save();renderDesktop();showToast('已从Dock移除');}});}dock.appendChild(el);});if(editMode){appRight.style.display='block';appRight.textContent='完成';appRight.onclick=function(){toggleEditMode(false);};}else{appRight.style.display='none';}}
+
+    // ===== 应用打开入口 =====
+    function openApp(id){if(editMode)return;modalOverlay.classList.remove('open');appOverlay.classList.add('active');appOverlay.style.background='var(--bg)';appBody.innerHTML='';appRight.style.display='none';appBack.style.display='block';appTitle.textContent='';switch(id){case 'chat':renderTelegram();break;case 'forum':renderForum();break;case 'phone':renderPhone();break;case 'safari':renderSafari();break;case 'camera':renderCamera();break;case 'photos':renderPhotos();break;case 'settings':renderSettings();break;case 'appstore':renderAppStore();break;case 'applemusic':renderAppleMusic();break;case 'memo':renderMemo();break;case 'line':renderLine();break;case 'meituan':renderMeituan();break;case 'colourful':renderColourful();break;default:appBody.innerHTML='<div style="padding:40px;text-align:center;color:var(--text2)">功能开发中</div>';}}
+    appBack.addEventListener('click',function(){
+        appOverlay.classList.remove('active');
+        if(S.amTimer){clearInterval(S.amTimer);S.amTimer=null;}
+        if(S.amAudio){S.amAudio.pause();S.amAudio=null;S.amPlaying=false;}
+        for(var key in S.blockIntervals){clearInterval(S.blockIntervals[key]);delete S.blockIntervals[key];}
+        S._currentMsgArea = null;
+    });
+
+    // ===== App Store =====
+    function renderAppStore(){appTitle.textContent='App Store';appBack.style.display='block';appRight.style.display='none';var html='<div style="display:flex;flex-direction:column;gap:12px;">';storeApps.forEach(function(a){var installed=S.apps.find(function(x){return x.id===a.id;});var iconData=S.iconCustom[a.id];var iconStyle=iconData?'background-image:url('+iconData+');background-size:cover;':'background:'+a.color+';';html+='<div class="appstore-item"><div class="icon" style="'+iconStyle+'">'+(iconData?'':a.icon)+'</div><div class="info"><div class="name">'+a.name+'</div><div class="desc">'+a.desc+'</div></div><button class="btn" style="background:'+(installed?'#34C759':'#007AFF')+'" data-id="'+a.id+'" data-name="'+a.name+'" data-icon="'+a.icon+'" data-color="'+a.color+'">'+(installed?'打开':'获取')+'</button></div>';});html+='</div>';appBody.innerHTML=html;appBody.querySelectorAll('.btn').forEach(function(btn){btn.addEventListener('click',function(){var id=this.dataset.id,name=this.dataset.name,icon=this.dataset.icon,color=this.dataset.color;var installed=S.apps.find(function(x){return x.id===id;});if(installed){appOverlay.classList.remove('active');setTimeout(function(){openApp(id);},100);return;}S.apps.push({id:id,name:name,icon:icon,color:color});save();renderDesktop();this.textContent='打开';this.style.background='#34C759';showToast('已安装 '+name);});});}
+
+    // ========== ★ Apple Music（修复：变量名、监听器移除、空列表反馈、随机播放索引修复） ==========
+    function renderAppleMusic(){
+        appTitle.textContent='Apple Music';
+        appBack.style.display='block';
+        appRight.style.display='block';
+        appRight.textContent='+';
+        appRight.onclick=function(){showUploadModal();};
+
+        var container=document.createElement('div');
+        container.className='am-container';
+
+        var library=document.createElement('div');
+        library.className='am-library';
+        library.id='amLibrary';
+        container.appendChild(library);
+
+        var playerBar=document.createElement('div');
+        playerBar.className='am-player-bar';
+        playerBar.id='amPlayerBar';
+
+        var topRow=document.createElement('div');
+        topRow.className='top';
+        topRow.innerHTML=`
+            <div class="cover" id="amPlayerCover">🎵</div>
+            <div class="info">
+                <div class="name" id="amPlayerName">未选择</div>
+                <div class="artist" id="amPlayerArtist">—</div>
+            </div>
+            <div class="am-volume-wrap">
+                <span class="vol-icon">🔊</span>
+                <input type="range" id="amVolumeSlider" min="0" max="1" step="0.05" value="${S.amVolume || 0.8}">
+            </div>
+        `;
+        playerBar.appendChild(topRow);
+
+        var progressWrap=document.createElement('div');
+        progressWrap.className='progress-wrap';
+        progressWrap.id='amProgressWrap';
+        progressWrap.innerHTML='<div class="progress-fill" id="amProgressFill"></div>';
+        playerBar.appendChild(progressWrap);
+
+        var timeLabels=document.createElement('div');
+        timeLabels.className='time-labels';
+        timeLabels.innerHTML='<span id="amCurrentTime">0:00</span><span id="amTotalTime">0:00</span>';
+        playerBar.appendChild(timeLabels);
+
+        var controls=document.createElement('div');
+        controls.className='controls';
+        controls.innerHTML=`
+            <button class="loop-btn" id="amLoopBtn" title="循环模式">🔁</button>
+            <button id="amPrevBtn">⏮</button>
+            <button class="play-btn" id="amPlayBtn">▶</button>
+            <button id="amNextBtn">⏭</button>
+            <button id="amShuffleBtn" title="随机播放">🔀</button>
+        `;
+        playerBar.appendChild(controls);
+        container.appendChild(playerBar);
+        appBody.appendChild(container);
+
+        bindPlayerEvents();
+        renderLibrary();
+        updatePlayerUI();
+    }
+
+    function renderLibrary(){
+        var library=document.getElementById('amLibrary');
+        if(!library)return;
+        library.innerHTML='';
+        if(S.appleMusic.length===0){
+            library.innerHTML='<div class="am-empty"><div class="icon">🎵</div><div class="hint">暂无歌曲<br>点击右上角 ＋ 上传</div></div>';
+            return;
+        }
+        S.appleMusic.forEach(function(track,idx){
+            var div=document.createElement('div');
+            div.className='am-track-item';
+            if(idx===S.amPlayingIndex){
+                div.style.background='var(--bg-secondary)';
+                div.style.borderLeft='3px solid var(--am-accent)';
+            }
+            var coverStyle=track.cover?'background-image:url('+track.cover+');background-size:cover;':'background:var(--bg-secondary);';
+            var isPlaying=idx===S.amPlayingIndex && S.amPlaying;
+            div.innerHTML=`
+                <div class="cover" style="${coverStyle}">${track.cover ? '' : (track.name[0] || '🎵')}</div>
+                <div class="info">
+                    <div class="name">${track.name}</div>
+                    <div class="artist">${track.artist}</div>
+                </div>
+                <div class="play-indicator">${isPlaying ? '▶️' : ''}</div>
+                <button class="delete-btn" data-idx="${idx}">删除</button>
+            `;
+            div.addEventListener('click',function(e){
+                if(e.target.classList.contains('delete-btn'))return;
+                playTrack(idx);
+            });
+            var startX=0,currentX=0,isSwiping=false;
+            div.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;isSwiping=true;});
+            div.addEventListener('touchmove',function(e){if(!isSwiping)return;currentX=e.touches[0].clientX;var diff=startX-currentX;if(diff>20){div.classList.add('swiped');}else if(diff<-20){div.classList.remove('swiped');}});
+            div.addEventListener('touchend',function(e){isSwiping=false;});
+            var delBtn=div.querySelector('.delete-btn');
+            delBtn.addEventListener('click',function(e){
+                e.stopPropagation();
+                var idx=parseInt(this.dataset.idx);
+                if(confirm('删除歌曲“'+S.appleMusic[idx].name+'”吗？')){
+                    S.appleMusic.splice(idx,1);
+                    if(S.amPlayingIndex===idx){S.amPlayingIndex=-1;if(S.amAudio){S.amAudio.pause();S.amAudio=null;S.amPlaying=false;}updatePlayerUI();}
+                    else if(S.amPlayingIndex>idx){S.amPlayingIndex--;}
+                    save();
+                    renderLibrary();
+                    updatePlayerUI();
+                    showToast('已删除');
+                }
+            });
+            library.appendChild(div);
+        });
+        updatePlayerUI();
+    }
+
+    function bindPlayerEvents(){
+        var playBtn=document.getElementById('amPlayBtn');
+        var prevBtn=document.getElementById('amPrevBtn');
+        var nextBtn=document.getElementById('amNextBtn');
+        var progressWrap=document.getElementById('amProgressWrap');
+        var volumeSlider=document.getElementById('amVolumeSlider');
+        var loopBtn=document.getElementById('amLoopBtn');
+        var shuffleBtn=document.getElementById('amShuffleBtn');
+
+        if(playBtn)playBtn.addEventListener('click',togglePlay);
+        if(prevBtn)prevBtn.addEventListener('click',prevTrack);
+        if(nextBtn)nextBtn.addEventListener('click',nextTrack);
+        if(volumeSlider){
+            volumeSlider.addEventListener('input',function(){
+                S.amVolume=parseFloat(this.value);
+                if(S.amAudio) S.amAudio.volume=S.amVolume;
+            });
+        }
+        if(loopBtn){
+            loopBtn.addEventListener('click',function(){
+                var modes=['none','one','all'];
+                var idx=modes.indexOf(S.amLoop);
+                S.amLoop=modes[(idx+1)%modes.length];
+                this.textContent=S.amLoop==='none'?'🔁':S.amLoop==='one'?'🔂':'🔁';
+                this.classList.toggle('active',S.amLoop!=='none');
+                showToast(S.amLoop==='none'?'关闭循环':S.amLoop==='one'?'单曲循环':'列表循环');
+            });
+            loopBtn.textContent=S.amLoop==='none'?'🔁':S.amLoop==='one'?'🔂':'🔁';
+            loopBtn.classList.toggle('active',S.amLoop!=='none');
+        }
+        if(shuffleBtn){
+            shuffleBtn.addEventListener('click',function(){
+                if(S.appleMusic.length<2){showToast('至少需要2首歌曲');return;}
+                // 打乱列表
+                for(var i=S.appleMusic.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var temp=S.appleMusic[i];S.appleMusic[i]=S.appleMusic[j];S.appleMusic[j]=temp;}
+                // 重置播放状态
+                S.amPlayingIndex=-1;
+                if(S.amAudio){S.amAudio.pause();S.amAudio=null;S.amPlaying=false;}
+                // 重置当前播放进度
+                updatePlayerUI();
+                save();
+                renderLibrary();
+                showToast('🔀 已随机打乱');
+            });
+        }
+
+        // 进度条拖拽
+        if(progressWrap){
+            var isDragging = false;
+            var onDrag = function(e){
+                if(!S.amAudio || !S.amAudio.duration) return;
+                var rect = progressWrap.getBoundingClientRect();
+                var x = e.clientX || (e.touches && e.touches[0].clientX);
+                if(x === undefined) return;
+                var pct = Math.min(1, Math.max(0, (x - rect.left) / rect.width));
+                S.amAudio.currentTime = pct * S.amAudio.duration;
+                updateProgress();
+            };
+            progressWrap.addEventListener('pointerdown', function(e){
+                isDragging = true;
+                progressWrap.setPointerCapture(e.pointerId);
+                onDrag(e);
+                e.preventDefault();
+            });
+            progressWrap.addEventListener('pointermove', function(e){
+                if(isDragging) onDrag(e);
+            });
+            progressWrap.addEventListener('pointerup', function(e){
+                isDragging = false;
+                progressWrap.releasePointerCapture(e.pointerId);
+            });
+            progressWrap.addEventListener('pointercancel', function(e){
+                isDragging = false;
+            });
+            progressWrap.addEventListener('touchstart', function(e){
+                var touch = e.touches[0];
+                if(!S.amAudio || !S.amAudio.duration) return;
+                var rect = progressWrap.getBoundingClientRect();
+                var pct = Math.min(1, Math.max(0, (touch.clientX - rect.left) / rect.width));
+                S.amAudio.currentTime = pct * S.amAudio.duration;
+                updateProgress();
+                e.preventDefault();
+            }, {passive:false});
+        }
+    }
+
+    // 修复：移除旧监听器，避免内存泄漏
+    function playTrack(idx){
+        if(idx<0||idx>=S.appleMusic.length){
+            showToast('没有歌曲可播放');
+            return;
+        }
+        var track=S.appleMusic[idx];
+        if(S.amAudio){
+            // 移除旧监听器
+            S.amAudio.removeEventListener('timeupdate',updateProgress);
+            S.amAudio.removeEventListener('ended',function(){});
+            S.amAudio.pause();
+            S.amAudio=null;
+        }
+        S.amPlayingIndex=idx;
+        S.amPlaying=true;
+        var audio=new Audio(track.data);
+        audio.volume=S.amVolume||0.8;
+        audio.load();
+        // 等待音频可播放
+        audio.addEventListener('canplaythrough', function(){
+            audio.play().catch(function(e){showToast('无法播放: '+e.message);});
+        });
+        // 兼容：如果canplaythrough未触发，直接play
+        setTimeout(function(){
+            if(audio.paused) audio.play().catch(function(e){});
+        }, 500);
+        S.amAudio=audio;
+        updatePlayerUI();
+        audio.addEventListener('timeupdate',updateProgress);
+        audio.addEventListener('ended',function onEnd(){
+            if(S.amLoop==='one'){playTrack(S.amPlayingIndex);}
+            else if(S.amLoop==='all'){nextTrack();}
+            else{S.amPlaying=false;updatePlayerUI();renderLibrary();}
+        });
+        if(S.amTimer){clearInterval(S.amTimer);}
+        S.amTimer=setInterval(function(){if(S.amAudio&&!S.amAudio.paused){updateProgress();}},200);
+        renderLibrary();
+        showToast('▶ 播放: '+track.name);
+    }
+
+    function togglePlay(){
+        if(S.amAudio){
+            if(S.amPlaying){S.amAudio.pause();S.amPlaying=false;document.getElementById('amPlayBtn').textContent='▶';}
+            else{S.amAudio.play();S.amPlaying=true;document.getElementById('amPlayBtn').textContent='⏸';}
+            updatePlayerUI();renderLibrary();
+        }else{
+            if(S.appleMusic.length>0){playTrack(0);}else{showToast('请先上传歌曲');}
+        }
+    }
+    function prevTrack(){if(S.appleMusic.length===0){showToast('没有歌曲');return;}var idx=(S.amPlayingIndex-1+S.appleMusic.length)%S.appleMusic.length;playTrack(idx);}
+    function nextTrack(){if(S.appleMusic.length===0){showToast('没有歌曲');return;}var idx=(S.amPlayingIndex+1)%S.appleMusic.length;playTrack(idx);}
+    function updatePlayerUI(){
+        var nameEl=document.getElementById('amPlayerName');
+        var artistEl=document.getElementById('amPlayerArtist');
+        var coverEl=document.getElementById('amPlayerCover');
+        var playBtn=document.getElementById('amPlayBtn');
+        var coverWrap=document.querySelector('.am-player-bar .cover');
+        if(S.amPlayingIndex>=0&&S.appleMusic[S.amPlayingIndex]){
+            var track=S.appleMusic[S.amPlayingIndex];
+            if(nameEl)nameEl.textContent=track.name;
+            if(artistEl)artistEl.textContent=track.artist;
+            if(coverEl){
+                if(track.cover){
+                    coverEl.style.backgroundImage='url('+track.cover+')';
+                    coverEl.style.backgroundSize='cover';
+                    coverEl.textContent='';
+                }else{
+                    coverEl.style.backgroundImage='';
+                    coverEl.textContent=track.name[0]||'🎵';
+                }
+            }
+            if(coverWrap)coverWrap.classList.toggle('playing',S.amPlaying);
+        }else{
+            if(nameEl)nameEl.textContent='未选择';
+            if(artistEl)artistEl.textContent='—';
+            if(coverEl){coverEl.style.backgroundImage='';coverEl.textContent='🎵';}
+            if(coverWrap)coverWrap.classList.remove('playing');
+        }
+        if(playBtn)playBtn.textContent=S.amPlaying?'⏸':'▶';
+        updateProgress();
+    }
+    function updateProgress(){
+        var fill=document.getElementById('amProgressFill');
+        var current=document.getElementById('amCurrentTime');
+        var total=document.getElementById('amTotalTime');
+        if(fill&&S.amAudio&&S.amAudio.duration){
+            var pct=(S.amAudio.currentTime/S.amAudio.duration)*100;
+            fill.style.width=Math.min(pct,100)+'%';
+            if(current){var mins=Math.floor(S.amAudio.currentTime/60);var secs=Math.floor(S.amAudio.currentTime%60);current.textContent=mins+':'+String(secs).padStart(2,'0');}
+            if(total){var tmins=Math.floor(S.amAudio.duration/60);var tsecs=Math.floor(S.amAudio.duration%60);total.textContent=tmins+':'+String(tsecs).padStart(2,'0');}
+        }else{
+            if(fill)fill.style.width='0%';
+            if(current)current.textContent='0:00';
+            if(total)total.textContent='0:00';
+        }
+    }
+
+    // 修复：上传时用户输入不被覆盖，且元数据解析库调用正确
+    function showUploadModal(){
+        modalContent.innerHTML=`
+            <div class="modal-title">上传曲目</div>
+            <div class="form-group"><label>歌曲名称</label><input id="amTrackName" placeholder="歌曲名称" value=""></div>
+            <div class="form-group"><label>歌手</label><input id="amTrackArtist" placeholder="歌手" value=""></div>
+            <div class="form-group"><label>音频文件</label><input type="file" accept="audio/*" id="amTrackFile"></div>
+            <div class="form-group"><label>封面 (自动提取)</label><div id="amCoverPreview" style="width:60px;height:60px;border-radius:8px;background:var(--bg-secondary);margin-top:4px;background-size:cover;background-position:center;"></div></div>
+            <button class="btn btn-primary" id="amTrackConfirm">上传</button>
+            <button class="btn btn-secondary" id="modalCloseBtn">取消</button>
+        `;
+        modalOverlay.classList.add('open');
+        var nameInput=modalContent.querySelector('#amTrackName');
+        var artistInput=modalContent.querySelector('#amTrackArtist');
+        var fileInput=modalContent.querySelector('#amTrackFile');
+        var confirmBtn=modalContent.querySelector('#amTrackConfirm');
+        var closeBtn=modalContent.querySelector('#modalCloseBtn');
+        var coverPreview=modalContent.querySelector('#amCoverPreview');
+        var audioData=null,coverData=null,fileName='';
+        var userEditedName=false, userEditedArtist=false;
+
+        nameInput.addEventListener('input',function(){userEditedName=true;});
+        artistInput.addEventListener('input',function(){userEditedArtist=true;});
+
+        fileInput.addEventListener('change',function(e){
+            var file=e.target.files[0];
+            if(!file)return;
+            fileName=file.name.replace(/\.[^/.]+$/,'')||'未命名';
+            if(!userEditedName) nameInput.value=fileName;
+            var reader=new FileReader();
+            reader.onload=function(ev){
+                audioData=ev.target.result;
+                // 使用 window.musicMetadata 或全局 musicMetadata
+                var metadataLib = window.musicMetadata || musicMetadata;
+                if(metadataLib){
+                    metadataLib.parseBlob(file).then(function(metadata){
+                        var pic=metadata.common.picture;
+                        if(pic && pic.length>0){
+                            var blob=new Blob([pic[0].data],{type:pic[0].format});
+                            var reader2=new FileReader();
+                            reader2.onload=function(ev2){
+                                coverData=ev2.target.result;
+                                coverPreview.style.backgroundImage='url('+coverData+')';
+                                coverPreview.textContent='';
+                                coverPreview.classList.add('has-cover');
+                            };
+                            reader2.readAsDataURL(blob);
+                        }
+                        if(!userEditedName && metadata.common.title) nameInput.value=metadata.common.title;
+                        if(!userEditedArtist && metadata.common.artist) artistInput.value=metadata.common.artist;
+                    }).catch(function(err){console.warn('元数据解析失败',err);});
+                }else{showToast('元数据解析库未加载',1500);}
+                var aud=new Audio(ev.target.result);
+                aud.onloadedmetadata=function(){
+                    var parts=fileName.split(/[-–_]/);
+                    if(parts.length>1 && !userEditedArtist && !artistInput.value){artistInput.value=parts[0].trim();}
+                };
+                aud.load();
+                showToast('音频已加载',1500);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        confirmBtn.addEventListener('click',function(e){
+            e.stopPropagation();
+            if(!audioData){showToast('请选择音频文件',2000);return;}
+            var name=nameInput.value.trim()||fileName||'未命名';
+            var artist=artistInput.value.trim()||'未知歌手';
+            var finalCover=coverData;
+            finishUpload(name,artist,audioData,finalCover);
+        });
+
+        function finishUpload(name,artist,audioData,cover){
+            S.appleMusic.push({id:genId(),name:name,artist:artist,data:audioData,cover:cover||null});
+            save();
+            modalOverlay.classList.remove('open');
+            renderLibrary();
+            showToast('✅ 已上传《'+name+'》',3000);
+        }
+        closeBtn.addEventListener('click',function(e){e.stopPropagation();modalOverlay.classList.remove('open');});
+    }
+
+    // ===== 相册 =====
+    function renderPhotos(){appTitle.textContent='相册';appBack.style.display='block';appRight.style.display='block';appRight.textContent='+';appRight.onclick=function(){var input=document.createElement('input');input.type='file';input.accept='image/*';input.multiple=true;input.onchange=function(e){var files=Array.from(e.target.files);files.forEach(function(file){var reader=new FileReader();reader.onload=function(ev){S.photos.push({id:genId(),data:ev.target.result,time:new Date().toISOString()});save();renderPhotos();};reader.readAsDataURL(file);});input.value='';};input.click();};appBody.innerHTML='';var grid=document.createElement('div');grid.className='photo-grid';if(S.photos.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);">暂无照片，点击 + 上传或拍照</div>';}else{var unique=[];var seen={};S.photos.slice().reverse().forEach(function(p){if(!seen[p.id]){seen[p.id]=true;unique.push(p);}});unique.forEach(function(p){var container=document.createElement('div');container.className='photo-item';var img=document.createElement('img');img.src=p.data;var delBtn=document.createElement('button');delBtn.className='del-btn';delBtn.textContent='✕';delBtn.addEventListener('click',function(e){e.stopPropagation();if(confirm('删除这张照片？')){S.photos=S.photos.filter(function(pp){return pp.id!==p.id;});save();renderPhotos();showToast('已删除');}});container.appendChild(img);container.appendChild(delBtn);var longTimer=null;container.addEventListener('pointerdown',function(e){longTimer=setTimeout(function(){container.classList.add('longpress');},600);});container.addEventListener('pointerup',function(){clearTimeout(longTimer);});container.addEventListener('pointercancel',function(){clearTimeout(longTimer);});img.addEventListener('click',function(){window.open(p.data,'_blank');});grid.appendChild(container);});}appBody.appendChild(grid);}
+
+    // ===== 记事簿 =====
+    function renderMemo(){appTitle.textContent='记事簿';appBack.style.display='block';appRight.style.display='block';appRight.textContent='+';appRight.onclick=function(){showMemoEditor(null);};var container=document.createElement('div');container.className='memo-list';if(S.memos.length===0){container.innerHTML='<div style="padding:40px;text-align:center;color:var(--text2);">没有备忘录</div>';}else{S.memos.slice().reverse().forEach(function(memo){var div=document.createElement('div');div.className='item';div.innerHTML='<div class="title">'+memo.title+'</div><div class="preview">'+memo.content.slice(0,50)+(memo.content.length>50?'...':'')+'</div><div class="time">'+formatDate(new Date(memo.time))+'</div>';div.addEventListener('click',function(){showMemoEditor(memo.id);});container.appendChild(div);});}appBody.appendChild(container);}
+    function showMemoEditor(id){var memo=id?S.memos.find(function(m){return m.id===id;}):null;var title=memo?memo.title:'';var content=memo?memo.content:'';modalContent.innerHTML='<div class="modal-title">'+(memo?'编辑':'新建')+'备忘录</div><div class="form-group"><input id="memoTitle" value="'+title+'" placeholder="标题"></div><div class="form-group"><textarea id="memoContent" rows="6" placeholder="内容">'+content+'</textarea></div><button class="btn btn-primary" id="memoSave">保存</button><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';modalOverlay.classList.add('open');document.getElementById('memoSave').addEventListener('click',function(){var t=document.getElementById('memoTitle').value.trim()||'无标题';var c=document.getElementById('memoContent').value;if(!c){showToast('请输入内容');return;}if(memo){memo.title=t;memo.content=c;memo.time=new Date().toISOString();}else{S.memos.push({id:genId(),title:t,content:c,time:new Date().toISOString()});}save();modalOverlay.classList.remove('open');renderMemo();showToast('已保存');});document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});}
+
+    // ===== Line（修复：防止重复添加默认联系人） =====
+    var lineTab='chats';var lineChatId=null;
+    function renderLine(){appTitle.textContent='Line';appBack.style.display='block';appRight.style.display='none';var container=document.createElement('div');container.style.cssText='display:flex;flex-direction:column;height:100%;';var body=document.createElement('div');body.style.cssText='flex:1;overflow-y:auto;';body.id='lineBody';container.appendChild(body);var tabbar=document.createElement('div');tabbar.className='line-tabbar';['chats','home','settings'].forEach(function(t){var btn=document.createElement('button');btn.className='tab'+(t===lineTab?' active':'');var labels={chats:'💬 聊天',home:'🏠 首页',settings:'⚙️ 设置'};btn.innerHTML=labels[t];btn.addEventListener('click',function(){lineTab=t;renderLine();});tabbar.appendChild(btn);});container.appendChild(tabbar);appBody.appendChild(container);renderLineContent();}
+    function renderLineContent(){var body=document.getElementById('lineBody');if(!body)return;if(lineTab==='chats'){body.innerHTML='';if(S.lineChats.length===0){var names=['Alice','Bob','Charlie','David','Eva'];names.forEach(function(n){S.lineChats.push({id:genId(),name:n,avatar:n[0],lastMsg:'你好！',lastTime:new Date().toISOString(),unread:0});S.lineMessages[S.lineChats[S.lineChats.length-1].id]=[{id:genId(),text:'你好！我是'+n,sender:'ai',time:new Date().toISOString()}];});save();}S.lineChats.forEach(function(chat){var div=document.createElement('div');div.className='line-chat-item';var msgs=S.lineMessages[chat.id]||[];var last=msgs.length?msgs[msgs.length-1]:null;div.innerHTML='<div class="avatar" style="background:#06C755;">'+chat.avatar+'</div><div class="info"><div class="name">'+chat.name+'</div><div class="last">'+(last?last.text:'开始聊天')+'</div></div><div class="meta">'+(last?formatTime(new Date(last.time)):'')+(chat.unread?'<div class="badge">'+chat.unread+'</div>':'')+'</div>';div.addEventListener('click',function(){lineChatId=chat.id;renderLineChat();});body.appendChild(div);});var addDiv=document.createElement('div');addDiv.style.cssText='padding:12px 16px;text-align:center;color:#06C755;font-size:16px;font-weight:600;cursor:pointer;border-top:1px solid var(--border);';addDiv.textContent='+ 添加好友';addDiv.addEventListener('click',function(){var name=prompt('输入好友名字:');if(name){S.lineChats.push({id:genId(),name:name,avatar:name[0],lastMsg:'开始聊天',lastTime:new Date().toISOString(),unread:0});S.lineMessages[S.lineChats[S.lineChats.length-1].id]=[];save();renderLine();}});body.appendChild(addDiv);}else if(lineTab==='home'){body.innerHTML='<div style="padding:40px;text-align:center;color:var(--text2);">Line 首页</div>';}else{body.innerHTML='<div style="padding:20px;"><div style="text-align:center;margin-bottom:16px;"><div class="avatar-edit" style="width:72px;height:72px;">'+(S.profile.avatarData?'':(S.profile.avatar||'🧑'))+'<input type="file" accept="image/*" id="lineAvatarUpload"></div><div style="font-weight:600;font-size:18px;">'+S.profile.name+'</div></div><div class="setting-item"><span class="label">🔔 通知</span><div class="toggle on"></div></div><div class="setting-item"><span class="label">🌙 深色模式</span><div class="toggle '+(S.theme==='dark'?'on':'')+'" id="lineThemeToggle"></div></div><div class="setting-item"><span class="label">💳 支付密码</span><button id="lineChangePayPwd" style="padding:4px 12px;border-radius:8px;background:#007AFF;color:#fff;border:none;cursor:pointer;">修改</button></div></div>';document.getElementById('lineAvatarUpload').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){S.profile.avatarData=ev.target.result;save();renderLine();};reader.readAsDataURL(file);});document.getElementById('lineThemeToggle').addEventListener('click',function(){this.classList.toggle('on');S.theme=this.classList.contains('on')?'dark':'light';document.documentElement.setAttribute('data-theme',S.theme);save();renderLine();});document.getElementById('lineChangePayPwd').addEventListener('click',function(){changePaymentPasscode();});}}
+    function renderLineChat(){var chat=S.lineChats.find(function(c){return c.id===lineChatId;});if(!chat){lineTab='chats';renderLine();return;}appTitle.textContent=chat.name;appBack.style.display='block';appRight.style.display='block';appRight.textContent='🗑️';appRight.onclick=function(){if(confirm('清空与 '+chat.name+' 的聊天记录？')){S.lineMessages[chat.id]=[];chat.lastMsg='开始聊天';chat.lastTime=new Date().toISOString();save();renderLineChat();showToast('已清空');}};var msgs=S.lineMessages[chat.id]||[];var container=document.createElement('div');container.style.cssText='display:flex;flex-direction:column;height:100%;';var msgArea=document.createElement('div');msgArea.style.cssText='flex:1;overflow-y:auto;padding:12px 14px;background:var(--line-bg);';msgs.forEach(function(msg){var wrapper=document.createElement('div');var isMine=msg.sender==='mine';wrapper.className='line-msg-wrapper '+(isMine?'mine':'theirs');var bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=msg.text;wrapper.appendChild(bubble);var time=document.createElement('div');time.className='time';time.textContent=formatTime(new Date(msg.time));wrapper.appendChild(time);msgArea.appendChild(wrapper);});msgArea.scrollTop=msgArea.scrollHeight;container.appendChild(msgArea);var inputArea=document.createElement('div');inputArea.style.cssText='display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--nav-bar);border-top:1px solid var(--border);flex-shrink:0;';inputArea.innerHTML='<input type="text" id="lineInput" placeholder="输入消息..." style="flex:1;padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;outline:none;"><button id="lineSend" style="background:#06C755;border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:16px;cursor:pointer;">➤</button>';container.appendChild(inputArea);appBody.innerHTML='';appBody.appendChild(container);var input=document.getElementById('lineInput');var sendBtn=document.getElementById('lineSend');function sendLineMsg(){var text=input.value.trim();if(!text)return;var msg={id:genId(),text:text,sender:'mine',time:new Date().toISOString()};if(!S.lineMessages[chat.id])S.lineMessages[chat.id]=[];S.lineMessages[chat.id].push(msg);chat.lastMsg=text;chat.lastTime=msg.time;save();renderLineChat();setTimeout(function(){var replies=['好的！','收到','有意思','哈哈','我明白了','继续吧'];var reply={id:genId(),text:replies[Math.floor(Math.random()*replies.length)],sender:'ai',time:new Date().toISOString()};S.lineMessages[chat.id].push(reply);chat.lastMsg=reply.text;chat.lastTime=reply.time;chat.unread=(chat.unread||0)+1;save();renderLineChat();},1000+Math.random()*1000);}sendBtn.addEventListener('click',sendLineMsg);input.addEventListener('keydown',function(e){if(e.key==='Enter')sendLineMsg();});setTimeout(function(){input.focus();},100);}
+
+    // ===== 美团 =====
+    function renderMeituan(){appTitle.textContent='美团外卖';appBack.style.display='block';appRight.style.display='none';var shops=[{name:'麦当劳',icon:'🍔',desc:'汉堡薯条',price:'¥25起'},{name:'肯德基',icon:'🍗',desc:'炸鸡汉堡',price:'¥30起'},{name:'海底捞',icon:'🍲',desc:'火锅',price:'¥80起'},{name:'星巴克',icon:'☕',desc:'咖啡',price:'¥20起'}];var html='<div style="padding:12px;">';shops.forEach(function(s){html+='<div class="meituan-shop"><div class="icon">'+s.icon+'</div><div class="info"><div class="name">'+s.name+'</div><div class="desc">'+s.desc+'</div></div><div class="price">'+s.price+'</div></div>';});html+='<div style="padding:20px;text-align:center;color:var(--text2);">点击店铺可下单（模拟）</div>';appBody.innerHTML=html;appBody.querySelectorAll('.meituan-shop').forEach(function(el){el.addEventListener('click',function(){showToast('已下单！');});});}
+
+    // ===== Colourful =====
+    function renderColourful(){appTitle.textContent='Colourful';appBack.style.display='block';appRight.style.display='block';appRight.textContent='+';appRight.onclick=function(){
+        var apps=S.apps.filter(function(a){return a.id!=='appstore'&&a.id!=='settings'&&a.id!=='colourful';});
+        if(apps.length===0){showToast('没有可编辑的应用');return;}
+        var html='<div class="modal-title">选择要修改图标的应用</div><div style="max-height:300px;overflow-y:auto;">';
+        apps.forEach(function(a){html+='<div class="appstore-item" style="cursor:pointer;" data-id="'+a.id+'"><div class="icon" style="background:'+a.color+';">'+a.icon+'</div><div class="info"><div class="name">'+a.name+'</div></div></div>';});
+        html+='</div><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';
+        modalContent.innerHTML=html;modalOverlay.classList.add('open');
+        modalContent.querySelectorAll('.appstore-item').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.id;modalOverlay.classList.remove('open');var input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){S.iconCustom[id]=ev.target.result;save();renderDesktop();showToast('图标已更新');};reader.readAsDataURL(file);};input.click();});});
+        document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});
+    };
+        var colors=['#FF6B6B','#4ECDC4','#FFD93D','#6BCB77','#A66CFF','#FF85A2','#4FC3F7','#FF8A65','#81C784','#BA68C8','#4DD0E1','#FFF176'];var html='<div class="colourful-grid">';colors.forEach(function(c){html+='<div class="color-block" style="background:'+c+';" onclick="showToast(\'颜色: '+c+'\')"></div>';});html+='</div><div style="padding:12px;text-align:center;color:var(--text2);">点击右上角 + 自定义应用图标</div>';appBody.innerHTML=html;}
+
+    // ===== 电话（修复：通话记录 duration 显示） =====
+    var phoneTab='dial';var dialNumber='';var callActive=false;var callTimer=null;var callSeconds=0;
+    function renderPhone(){appTitle.textContent='电话';appBack.style.display='block';appRight.style.display='none';var container=document.createElement('div');container.style.cssText='display:flex;flex-direction:column;height:100%;';var body=document.createElement('div');body.style.cssText='flex:1;overflow-y:auto;';body.id='phoneBody';container.appendChild(body);var tabs=document.createElement('div');tabs.className='phone-tabs';['dial','contacts','recents'].forEach(function(t){var btn=document.createElement('button');btn.className='tab'+(t===phoneTab?' active':'');var labels={dial:'拨号',contacts:'联系人',recents:'通话记录'};btn.textContent=labels[t];btn.addEventListener('click',function(){phoneTab=t;renderPhone();});tabs.appendChild(btn);});container.appendChild(tabs);appBody.appendChild(container);renderPhoneTab();}
+    function renderPhoneTab(){var body=document.getElementById('phoneBody');if(!body)return;if(phoneTab==='dial'){body.innerHTML='<div class="phone-dial"><div class="number" id="dialNumber">'+dialNumber+'</div><div class="keypad" id="dialKeypad">'+['1','2','3','4','5','6','7','8','9','*','0','#'].map(function(k){return '<button class="key" data-key="'+k+'">'+k+'<span class="sub">'+(k==='2'?'ABC':k==='3'?'DEF':k==='4'?'GHI':k==='5'?'JKL':k==='6'?'MNO':k==='7'?'PQRS':k==='8'?'TUV':k==='9'?'WXYZ':'')+'</span></button>';}).join('')+'<button class="key empty"></button><button class="key" data-key="0">0<span class="sub">+</span></button><button class="key" data-key="delete">⌫</button></div><button class="call-btn" id="dialCallBtn">📞</button></div>';document.getElementById('dialKeypad').addEventListener('click',function(e){var btn=e.target.closest('.key');if(!btn)return;var key=btn.dataset.key;if(key==='delete'){dialNumber=dialNumber.slice(0,-1);document.getElementById('dialNumber').textContent=dialNumber;}else if(key){dialNumber+=key;document.getElementById('dialNumber').textContent=dialNumber;}});document.getElementById('dialCallBtn').addEventListener('click',function(){if(!dialNumber)return;var contact=S.contacts.find(function(c){return c.phone===dialNumber;});var name=contact?contact.name:'未知号码';startCall(name,dialNumber);});}else if(phoneTab==='contacts'){body.innerHTML='<div class="phone-contact-list">';if(S.contacts.length===0){var names=['Alice','Bob','Charlie','David','Eva','Frank','Grace','Henry'];names.forEach(function(n){S.contacts.push({id:genId(),name:n,phone:generateUSPhone(),avatar:n[0]});});save();}S.contacts.forEach(function(c){var div=document.createElement('div');div.className='item';div.innerHTML='<div class="avatar">'+(c.avatar||'👤')+'</div><div>'+c.name+'</div><div style="margin-left:auto;font-size:12px;color:var(--text2);">'+c.phone+'</div>';div.addEventListener('click',function(){dialNumber=c.phone;phoneTab='dial';renderPhone();});body.appendChild(div);});body.innerHTML+='</div>';}else if(phoneTab==='recents'){body.innerHTML='<div class="phone-contact-list">';if(S.callHistory.length===0)body.innerHTML+='<div style="padding:20px;text-align:center;color:var(--text2);">暂无通话记录</div>';S.callHistory.slice(0,30).forEach(function(c){var div=document.createElement('div');div.className='item';div.innerHTML='<div style="display:flex;flex-direction:column;flex:1;"><div>'+c.name+'</div><div style="font-size:12px;color:var(--text2);">'+c.phone+' · '+(c.duration?c.duration+'秒':'未接')+'</div></div><div style="font-size:12px;color:var(--text2);">'+formatDate(new Date(c.time))+'</div>';body.appendChild(div);});body.innerHTML+='</div>';}}
+    function startCall(name,number){var existing=document.querySelector('.phone-call-screen');if(existing)existing.remove();var overlay=document.createElement('div');overlay.className='phone-call-screen active';overlay.innerHTML='<div class="avatar">'+(name[0]||'👤')+'</div><div class="name">'+name+'</div><div class="status" id="callStatus">呼叫中...</div><div class="actions"><button class="mute" id="callMuteBtn">🔇</button><button class="end" id="callEndBtn">📞</button></div>';document.getElementById('phone').appendChild(overlay);callActive=true;var muted=false;var connected=false;setTimeout(function(){if(callActive){document.getElementById('callStatus').textContent='通话中 00:00';connected=true;callSeconds=0;callTimer=setInterval(function(){callSeconds++;var m=Math.floor(callSeconds/60);var s=callSeconds%60;document.getElementById('callStatus').textContent='通话中 '+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');},1000);S.callHistory.unshift({id:genId(),name:name,phone:number,duration:0,time:new Date().toISOString()});save();}},1500);document.getElementById('callMuteBtn').addEventListener('click',function(){muted=!muted;this.textContent=muted?'🔊':'🔇';});document.getElementById('callEndBtn').addEventListener('click',function(){if(callTimer){clearInterval(callTimer);callTimer=null;}if(connected&&callActive){if(S.callHistory.length>0){S.callHistory[0].duration=callSeconds;save();}}callActive=false;overlay.remove();phoneTab='recents';renderPhone();showToast('通话结束');});}
+
+    // ===== Safari =====
+    function renderSafari(){appTitle.textContent='Safari';appBack.style.display='block';appRight.style.display='block';appRight.textContent='⚙️';appRight.onclick=function(){var engine=prompt('请输入搜索引擎URL（用 {keyword} 代替搜索词）:\n例如：https://www.baidu.com/s?wd={keyword}','https://www.baidu.com/s?wd={keyword}');if(engine&&engine.includes('{keyword}')){S.searchEngine=engine;save();showToast('搜索引擎已更新');}};var container=document.createElement('div');container.style.cssText='display:flex;flex-direction:column;height:100%;';var searchDiv=document.createElement('div');searchDiv.className='safari-search';searchDiv.innerHTML='<div class="logo">🌐</div><div class="search-box"><input type="text" id="safariInput" placeholder="搜索或输入网址" value=""><button id="safariGo">🔍</button></div>';container.appendChild(searchDiv);var result=document.createElement('div');result.className='safari-result';result.id='safariResult';var iframe=document.createElement('iframe');iframe.style.width='100%';iframe.style.height='100%';iframe.style.border='none';result.appendChild(iframe);container.appendChild(result);appBody.appendChild(container);document.getElementById('safariGo').addEventListener('click',function(){var input=document.getElementById('safariInput');var url=input.value.trim();if(!url){showToast('请输入搜索词或网址');return;}if(!url.startsWith('http://')&&!url.startsWith('https://')){if(url.includes('.')){url='https://'+url;}else{url=S.searchEngine.replace('{keyword}',encodeURIComponent(url));}}iframe.src=url;});document.getElementById('safariInput').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('safariGo').click();});}
+
+    // ===== 相机 =====
+    function renderCamera(){appTitle.textContent='相机';appBack.style.display='block';appRight.style.display='none';appBody.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;"><video id="camVideo" autoplay playsinline style="max-width:100%;max-height:70%;border-radius:16px;background:#000;"></video><div style="display:flex;gap:40px;margin-top:20px;"><button id="camShutter" style="width:64px;height:64px;border-radius:50%;background:#fff;border:3px solid rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.4);"></button><button id="camSwitch" style="font-size:28px;background:none;border:none;color:#fff;cursor:pointer;">🔄</button></div></div>';var stream=null,facing='environment';function startCam(){if(stream){stream.getTracks().forEach(function(t){t.stop();});}navigator.mediaDevices.getUserMedia({video:{facingMode:facing}}).then(function(s){stream=s;var video=document.getElementById('camVideo');video.srcObject=s;video.play();}).catch(function(){showToast('无法访问摄像头');});}startCam();document.getElementById('camShutter').addEventListener('click',function(){var video=document.getElementById('camVideo');var canvas=document.createElement('canvas');canvas.width=video.videoWidth||1280;canvas.height=video.videoHeight||720;var ctx=canvas.getContext('2d');ctx.drawImage(video,0,0,canvas.width,canvas.height);var data=canvas.toDataURL('image/jpeg',0.9);S.photos.push({id:genId(),data:data,time:new Date().toISOString()});save();showToast('📸 照片已保存到相册');});document.getElementById('camSwitch').addEventListener('click',function(){facing=facing==='environment'?'user':'environment';startCam();});var closeHandler=function(){if(stream){stream.getTracks().forEach(function(t){t.stop();});}};appBack.addEventListener('click',closeHandler,{once:true});}
+
+    // ===== 设置 =====
+    function renderSettings(){appTitle.textContent='设置';appBack.style.display='block';appRight.style.display='none';appBody.innerHTML='<div style="padding:8px 0;"><div style="text-align:center;margin-bottom:16px;"><div class="avatar-edit" id="setAvatar" style="width:72px;height:72px;">'+(S.profile.avatarData?'':(S.profile.avatar||'🧑'))+'<input type="file" accept="image/*" id="setAvatarUpload"></div><div style="font-weight:600;font-size:18px;">'+(S.profile.name||'我')+'</div></div><div class="setting-item"><span class="label"><span class="icon">📶</span>Wi-Fi</span><div class="toggle '+(S.wifi?'on':'')+'" id="setWifi"></div></div><div class="setting-item"><span class="label"><span class="icon">📶</span>蓝牙</span><div class="toggle '+(S.bt?'on':'')+'" id="setBt"></div></div><div class="setting-item"><span class="label"><span class="icon">📶</span>个人热点</span><div class="toggle '+(S.hotspot?'on':'')+'" id="setHotspot"></div></div><div class="setting-item"><span class="label"><span class="icon">🖼️</span>墙纸</span><div style="display:flex;gap:8px;"><button id="setWallpaperBtn" style="padding:4px 12px;border-radius:8px;background:#007AFF;color:#fff;border:none;cursor:pointer;">上传</button></div></div><div class="setting-item"><span class="label"><span class="icon">🌓</span>深色模式</span><div class="toggle '+(S.theme==='dark'?'on':'')+'" id="setTheme"></div></div><div class="setting-item"><span class="label"><span class="icon">🔒</span>修改锁屏密码</span><button id="changeLockPwd" style="padding:4px 12px;border-radius:8px;background:#007AFF;color:#fff;border:none;cursor:pointer;">修改</button></div><button class="btn btn-primary" id="setSave" style="margin-top:12px;">保存设置</button></div>';var avatar=document.getElementById('setAvatar');if(S.profile.avatarData){avatar.style.backgroundImage='url('+S.profile.avatarData+')';avatar.textContent='';}document.getElementById('setAvatarUpload').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){var data=ev.target.result;avatar.style.backgroundImage='url('+data+')';avatar.textContent='';S.profile.avatarData=data;save();};reader.readAsDataURL(file);});document.getElementById('setWifi').addEventListener('click',function(){this.classList.toggle('on');S.wifi=this.classList.contains('on');});document.getElementById('setBt').addEventListener('click',function(){this.classList.toggle('on');S.bt=this.classList.contains('on');});document.getElementById('setHotspot').addEventListener('click',function(){this.classList.toggle('on');S.hotspot=this.classList.contains('on');});document.getElementById('setTheme').addEventListener('click',function(){this.classList.toggle('on');S.theme=this.classList.contains('on')?'dark':'light';document.documentElement.setAttribute('data-theme',S.theme);save();showToast(S.theme==='dark'?'深色模式':'浅色模式');});document.getElementById('changeLockPwd').addEventListener('click',function(){changeLockPassword();});document.getElementById('setWallpaperBtn').addEventListener('click',function(){modalContent.innerHTML='<div class="modal-title">🖼️ 设置墙纸</div><div class="form-group"><label>选择图片</label><input type="file" accept="image/*" id="wpFile"></div><div class="form-group"><label>裁剪 (拖动调整)</label><div style="position:relative;width:100%;padding-bottom:100%;background:#eee;overflow:hidden;border-radius:8px;"><img id="wpPreview" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;"></div></div><div class="form-group"><label>设置为</label><select id="wpType"><option value="lock">锁屏</option><option value="home">桌面</option><option value="both">同时</option></select></div><button class="btn btn-primary" id="wpConfirm">确认</button><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';modalOverlay.classList.add('open');var wpData=null;var preview=document.getElementById('wpPreview');document.getElementById('wpFile').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){wpData=ev.target.result;preview.src=wpData;};reader.readAsDataURL(file);});document.getElementById('wpConfirm').addEventListener('click',function(){if(!wpData){showToast('请选择图片');return;}var type=document.getElementById('wpType').value;if(type==='lock'||type==='both'){S.wallpaper.lock=wpData;lockScreen.style.backgroundImage='url('+wpData+')';lockScreen.style.backgroundSize='cover';}if(type==='home'||type==='both'){S.wallpaper.home=wpData;desk.style.backgroundImage='url('+wpData+')';desk.style.backgroundSize='cover';}save();modalOverlay.classList.remove('open');showToast('墙纸已更新');});document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});});document.getElementById('setSave').addEventListener('click',function(){save();showToast('设置已保存');});}
+
+    // ===== 修改密码 =====
+    function changeLockPassword(){modalContent.innerHTML='<div class="modal-title">修改锁屏密码</div><div class="form-group"><label>当前密码</label><input type="password" id="oldPwd" placeholder="输入当前密码"></div><div class="form-group"><label>新密码</label><input type="password" id="newPwd" placeholder="输入新密码（6位数字）"></div><div class="form-group"><label>确认新密码</label><input type="password" id="confirmPwd" placeholder="再次输入新密码"></div><button class="btn btn-primary" id="changePwdConfirm">确认</button><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';modalOverlay.classList.add('open');document.getElementById('changePwdConfirm').addEventListener('click',function(){var old=document.getElementById('oldPwd').value;var newp=document.getElementById('newPwd').value;var confirmp=document.getElementById('confirmPwd').value;if(old!==S.passcode){showToast('当前密码错误');return;}if(newp.length!==6||isNaN(newp)){showToast('新密码必须为6位数字');return;}if(newp!==confirmp){showToast('两次输入密码不一致');return;}S.passcode=newp;save();modalOverlay.classList.remove('open');showToast('密码已修改');});document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});}
+    function changePaymentPasscode(){modalContent.innerHTML='<div class="modal-title">修改支付密码</div><div class="form-group"><label>当前支付密码</label><input type="password" id="oldPayPwd" placeholder="输入当前支付密码"></div><div class="form-group"><label>新支付密码</label><input type="password" id="newPayPwd" placeholder="输入新密码（6位数字）"></div><div class="form-group"><label>确认新支付密码</label><input type="password" id="confirmPayPwd" placeholder="再次输入新密码"></div><button class="btn btn-primary" id="changePayPwdConfirm">确认</button><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';modalOverlay.classList.add('open');document.getElementById('changePayPwdConfirm').addEventListener('click',function(){var old=document.getElementById('oldPayPwd').value;var newp=document.getElementById('newPayPwd').value;var confirmp=document.getElementById('confirmPayPwd').value;if(old!==S.paymentPasscode){showToast('当前支付密码错误');return;}if(newp.length!==6||isNaN(newp)){showToast('新密码必须为6位数字');return;}if(newp!==confirmp){showToast('两次输入密码不一致');return;}S.paymentPasscode=newp;save();modalOverlay.classList.remove('open');showToast('支付密码已修改');});document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});}
+
+    // =============================================================
+    // ===== Telegram 核心（修复：未读计数清零、分享AI处理、语音识别兼容提示） =====
+    var tgTab='chats';
+
+    function speakText(text, pitch, rate){
+        if(!('speechSynthesis' in window)){showToast('语音合成不支持');return;}
+        var utterance=new SpeechSynthesisUtterance(text);
+        utterance.lang='zh-CN';
+        if(S.voiceConfig.cloneId){
+            var clone=S.voiceClones.find(function(c){return c.id===S.voiceConfig.cloneId;});
+            if(clone){
+                pitch = clone.pitch || pitch;
+                rate = clone.rate || rate;
+            }
+        }
+        utterance.pitch=pitch||S.voiceConfig.pitch||1;
+        utterance.rate=rate||S.voiceConfig.rate||1;
+        utterance.volume=1;
+        var voices=speechSynthesis.getVoices();
+        var zhVoice=voices.find(function(v){return v.lang.startsWith('zh');});
+        if(zhVoice) utterance.voice=zhVoice;
+        speechSynthesis.speak(utterance);
+    }
+
+    function appendMessageToCurrentChat(chatId, msg){
+        if(chatId !== S.currentChatId) return false;
+        var msgArea = S._currentMsgArea;
+        if(!msgArea) return false;
+        var wrapper = document.createElement('div');
+        var isMine = msg.sender === 'mine';
+        wrapper.className = 'msg-wrapper ' + (isMine ? 'mine' : 'theirs');
+        var bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        var content = msg.text;
+        if(msg.extra && msg.extra.image) content += '<img src="'+msg.extra.image+'">';
+        if(msg.extra && msg.extra.transfer){
+            var t = msg.extra.transfer;
+            content += '<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;margin-top:4px;">💰 转账 '+t.amount+' '+t.currency+' 给 '+t.recipient+'<div style="font-size:12px;opacity:0.7;">'+(t.note||'')+'</div></div>';
+        }
+        if(!isMine && msg.sender !== 'system'){
+            var chat = S.chats.find(function(c){return c.id===chatId;});
+            var name = chat ? chat.name : '对方';
+            bubble.innerHTML = '<span style="font-weight:600;">'+name+'</span> '+content;
+        } else {
+            bubble.innerHTML = content;
+        }
+        wrapper.appendChild(bubble);
+        var time = document.createElement('div');
+        time.className = 'time';
+        time.textContent = formatTime(new Date(msg.time)) + (msg.read ? ' ✓' : '');
+        wrapper.appendChild(time);
+        msgArea.appendChild(wrapper);
+        msgArea.scrollTop = msgArea.scrollHeight;
+        return true;
+    }
+
+    function sendTelegramMessage(chatId, text, isAI){
+        if(!text) return;
+        var chat = S.chats.find(function(c){return c.id===chatId;});
+        if(!chat) return;
+        var msg = {id:genId(), text:text, sender:'mine', time:new Date().toISOString(), extra:{}, read:true};
+        if(!S.messages[chatId]) S.messages[chatId] = [];
+        S.messages[chatId].push(msg);
+        chat.lastMsg = text;
+        chat.lastTime = msg.time;
+        appendMessageToCurrentChat(chatId, msg);
+        save();
+        var inputEl = document.querySelector('#tgInput');
+        if(inputEl) inputEl.value = '';
+        if(isAI){
+            setTimeout(function(){ callAI(chatId, text); }, 3000);
+        } else {
+            setTimeout(function(){
+                var replies = ['收到你的消息！', '好的', '嗯嗯', '有意思', '继续说吧'];
+                var reply = {id:genId(), text:replies[Math.floor(Math.random()*replies.length)], sender:'ai', time:new Date().toISOString(), extra:{}, read:false};
+                S.messages[chatId].push(reply);
+                chat.lastMsg = reply.text;
+                chat.lastTime = reply.time;
+                chat.unread = (chat.unread || 0) + 1;
+                appendMessageToCurrentChat(chatId, reply);
+                save();
+            }, 800 + Math.random()*600);
+        }
+    }
+
+    function renderTelegram(){
+        appTitle.textContent='Telegram';
+        appBack.style.display='block';
+        appRight.style.display='block';
+        appRight.textContent='+';
+        appRight.onclick=function(){showCreateAIChat();};
+        renderTgContent();
+    }
+
+    function renderTgContent(){
+        var inputEl = document.querySelector('#tgInput');
+        if(inputEl && S.currentChatId){
+            S._pendingInputs[S.currentChatId] = inputEl.value;
+        }
+
+        var container=document.createElement('div');
+        container.style.cssText='display:flex;flex-direction:column;height:100%;';
+        var body=document.createElement('div');
+        body.style.cssText='flex:1;overflow-y:auto;';
+        body.className='tg-chat-list';
+        container.appendChild(body);
+
+        if(tgTab==='chats'){
+            renderChatList(body);
+        }else if(tgTab==='home'){
+            if(S.currentChatId){
+                renderChatWindow(body);
+            }else{
+                body.innerHTML='<div style="padding:40px;text-align:center;color:var(--text2);">选择一个聊天开始对话</div>';
+            }
+        }else if(tgTab==='settings'){
+            renderTgSettings(body);
+        }
+
+        var tabbar=document.createElement('div');
+        tabbar.className='tg-tabbar';
+        ['chats','home','settings'].forEach(function(t){
+            var btn=document.createElement('button');
+            btn.className='tab'+(t===tgTab?' active':'');
+            var labels={chats:'👥 联系人',home:'🏠 首页',settings:'⚙️ 设置'};
+            btn.innerHTML=labels[t];
+            btn.addEventListener('click',function(){
+                tgTab=t;
+                renderTgContent();
+            });
+            tabbar.appendChild(btn);
+        });
+        container.appendChild(tabbar);
+
+        appBody.innerHTML='';
+        appBody.appendChild(container);
+
+        if(S.currentChatId && S._pendingInputs[S.currentChatId] !== undefined){
+            var newInput = document.querySelector('#tgInput');
+            if(newInput) newInput.value = S._pendingInputs[S.currentChatId];
+        }
+    }
+
+    function renderChatList(body){
+        body.innerHTML='';
+        S.chats.forEach(function(chat){
+            var div=document.createElement('div');
+            div.className='item';
+            var avatarStyle=chat.avatarData?'background-image:url('+chat.avatarData+');background-size:cover;':'background:'+(chat.isAI?'#007AFF':'#34C759');
+            var msgs=S.messages[chat.id]||[];
+            var last=msgs.length?msgs[msgs.length-1]:null;
+            var isBlocked=S.blockedContacts[chat.id];
+            div.innerHTML='<div class="avatar" style="'+avatarStyle+'">'+(chat.avatarData?'':(chat.avatar||'🤖'))+'</div><div class="info"><div class="name">'+chat.name+(isBlocked?' 🚫':'')+'</div><div class="last">'+(last?last.text:'开始聊天')+'</div></div><div class="meta">'+(last?formatTime(new Date(last.time)):'')+(chat.unread?'<div class="badge">'+chat.unread+'</div>':'')+'</div>';
+            div.addEventListener('click',function(){
+                S.currentChatId=chat.id;
+                tgTab='home';
+                renderTgContent();
+            });
+            body.appendChild(div);
+        });
+    }
+
+    function renderChatWindow(body){
+        var chat=S.chats.find(function(c){return c.id===S.currentChatId;});
+        if(!chat){tgTab='chats';renderTgContent();return;}
+
+        var isBlocked=S.blockedContacts[chat.id]||false;
+        var msgs=S.messages[chat.id]||[];
+        // 进入聊天后清零未读
+        if(chat.unread>0){chat.unread=0;save();}
+        var updated=false;
+        msgs.forEach(function(m){if(m.sender!=='mine'&&!m.read){m.read=true;updated=true;}});
+        if(updated){save();}
+
+        var container=document.createElement('div');
+        container.className='tg-chat-window';
+
+        var msgArea=document.createElement('div');
+        msgArea.className='msgs';
+        msgArea.id='tgMsgArea';
+        msgs.forEach(function(msg){
+            var wrapper=document.createElement('div');
+            var isMine=msg.sender==='mine';
+            wrapper.className='msg-wrapper '+(isMine?'mine':'theirs');
+            var bubble=document.createElement('div');
+            bubble.className='bubble';
+            var content=msg.text;
+            if(msg.extra&&msg.extra.image)content+='<img src="'+msg.extra.image+'">';
+            if(msg.extra&&msg.extra.transfer){
+                var t=msg.extra.transfer;
+                content+='<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;margin-top:4px;">💰 转账 '+t.amount+' '+t.currency+' 给 '+t.recipient+'<div style="font-size:12px;opacity:0.7;">'+(t.note||'')+'</div></div>';
+            }
+            if(!isMine&&msg.sender!=='system'){
+                bubble.innerHTML='<span style="font-weight:600;">'+chat.name+'</span> '+content;
+            }else{
+                bubble.innerHTML=content;
+            }
+            wrapper.appendChild(bubble);
+            var time=document.createElement('div');
+            time.className='time';
+            time.textContent=formatTime(new Date(msg.time))+(msg.read?' ✓':'');
+            wrapper.appendChild(time);
+            msgArea.appendChild(wrapper);
+        });
+        msgArea.scrollTop=msgArea.scrollHeight;
+        container.appendChild(msgArea);
+
+        S._currentMsgArea = msgArea;
+
+        var inputArea=document.createElement('div');
+        inputArea.className='input';
+        inputArea.innerHTML='<button class="plus" id="tgPlus">➕</button><button class="voice" id="tgVoice">🎤</button><input type="text" id="tgInput" placeholder="输入消息..." autocomplete="off"'+(isBlocked?' disabled style="opacity:0.5;"':'')+'><button class="send" id="tgSend" '+(isBlocked?'disabled style="opacity:0.5;"':'')+'>➤</button>';
+        container.appendChild(inputArea);
+
+        body.innerHTML='';
+        body.appendChild(container);
+
+        var input=inputArea.querySelector('#tgInput');
+        var sendBtn=inputArea.querySelector('#tgSend');
+        var plusBtn=inputArea.querySelector('#tgPlus');
+        var voiceBtn=inputArea.querySelector('#tgVoice');
+
+        if(S._pendingInputs[chat.id] !== undefined){
+            input.value = S._pendingInputs[chat.id];
+        }
+
+        appRight.textContent='👤';
+        appRight.onclick=function(){showContactProfile(chat.id);};
+
+        voiceBtn.addEventListener('contextmenu',function(e){
+            e.preventDefault();
+            var msgs = S.messages[chat.id] || [];
+            if(msgs.length>0){
+                var lastAI=msgs.filter(function(m){return m.sender==='ai';}).pop();
+                if(lastAI){
+                    speakText(lastAI.text, S.voiceConfig.pitch, S.voiceConfig.rate);
+                    showToast('🔊 正在朗读AI消息');
+                }
+            }else{showToast('没有AI消息');}
+        });
+
+        function handleSend(){
+            if(isBlocked){showToast('你已被拉黑，无法发送消息');return;}
+            var text=input.value.trim();
+            if(!text)return;
+            sendTelegramMessage(chat.id, text, chat.isAI || false);
+            input.value = '';
+            S._pendingInputs[chat.id] = '';
+            input.focus();
+        }
+
+        sendBtn.addEventListener('click',handleSend);
+        input.addEventListener('keydown',function(e){if(e.key==='Enter')handleSend();});
+
+        if(isBlocked){
+            plusBtn.style.opacity='0.4';
+            voiceBtn.style.opacity='0.4';
+            plusBtn.style.pointerEvents='none';
+            voiceBtn.style.pointerEvents='none';
+        }
+
+        plusBtn.addEventListener('click',function(){
+            if(isBlocked){showToast('已拉黑，无法操作');return;}
+            var action=prompt('选择操作:\n1. 转账\n2. 真心话\n3. 拍照\n4. 发图片');
+            if(action==='1')showTransfer(chat.id);
+            else if(action==='2')showTruthWheel(chat.id);
+            else if(action==='3')takePhotoForChat(chat.id);
+            else if(action==='4')sendImageToChat(chat.id);
+        });
+
+        // 语音识别兼容性提示
+        voiceBtn.addEventListener('click',function(){
+            if(isBlocked){showToast('已拉黑，无法使用');return;}
+            if(!('webkitSpeechRecognition' in window)){
+                showToast('当前浏览器不支持语音识别，请使用Chrome');
+                return;
+            }
+            if(S.isRecording){try{S.voiceRec.stop();}catch(e){}S.isRecording=false;voiceBtn.classList.remove('recording');return;}
+            var SR=window.webkitSpeechRecognition;
+            S.voiceRec=new SR();
+            S.voiceRec.lang='zh-CN';
+            S.voiceRec.interimResults=true;
+            var recognized = false;
+            S.voiceRec.onresult=function(e){
+                var final='';
+                for(var i=e.resultIndex;i<e.results.length;i++){
+                    if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+                }
+                if(final){recognized=true; input.value=final; handleSend();}
+            };
+            S.voiceRec.onend=function(){
+                S.isRecording=false;
+                voiceBtn.classList.remove('recording');
+                if(!recognized) showToast('未识别到语音，请重试');
+            };
+            S.voiceRec.start();
+            S.isRecording=true;
+            voiceBtn.classList.add('recording');
+        });
+    }
+
+    async function callAI(chatId, userText){
+        var config=S.aiConfig;
+        var apiKey=config.apiKey||'';
+        var model=config.model||'deepseek-chat';
+        var persona=config.persona||'你是一个友好的AI助手。';
+        var memories=S.memories[chatId]||[];
+        var memoryText=memories.length?'相关记忆：'+memories.slice(-5).join('；'):'';
+        if(!apiKey){
+            var replies=['这是一个很好的问题！让我想想...','我明白你的意思了。','有意思，继续说下去。','我理解你的感受。','根据我的了解，是这样的。'];
+            var reply=replies[Math.floor(Math.random()*replies.length)]+' (💡 请配置API Key)';
+            var msg={id:genId(), text:reply, sender:'ai', time:new Date().toISOString(), extra:{}, read:false};
+            var chat=S.chats.find(function(c){return c.id===chatId;});
+            S.messages[chatId].push(msg);
+            if(chat){chat.lastMsg=reply;chat.lastTime=msg.time;chat.unread=(chat.unread||0)+1;}
+            save();
+            appendMessageToCurrentChat(chatId, msg);
+            trySummary(chatId);
+            if(S.voiceConfig.enabled!==false){speakText(reply,S.voiceConfig.pitch,S.voiceConfig.rate);}
+            return;
+        }
+        try{
+            var endpoint='https://api.deepseek.com/v1/chat/completions';
+            var resp=await fetch(endpoint,{
+                method:'POST',
+                headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+                body:JSON.stringify({
+                    model:model,
+                    messages:[
+                        {role:'system', content:persona+' '+memoryText},
+                        {role:'user', content:userText}
+                    ],
+                    temperature:0.7,
+                    max_tokens:500
+                })
+            });
+            if(!resp.ok){var errData=await resp.json(); throw new Error(errData.error?.message||'API请求失败');}
+            var data=await resp.json();
+            var reply=data.choices[0]?.message?.content||'抱歉，我没有理解。';
+            var msg={id:genId(), text:reply, sender:'ai', time:new Date().toISOString(), extra:{}, read:false};
+            var chat=S.chats.find(function(c){return c.id===chatId;});
+            S.messages[chatId].push(msg);
+            if(chat){chat.lastMsg=reply;chat.lastTime=msg.time;chat.unread=(chat.unread||0)+1;}
+            save();
+            appendMessageToCurrentChat(chatId, msg);
+            trySummary(chatId);
+            if(S.voiceConfig.enabled!==false){speakText(reply,S.voiceConfig.pitch,S.voiceConfig.rate);}
+        }catch(err){showToast('AI错误: '+err.message);}
+    }
+
+    function startBlockedMessageTimer(chatId){
+        if(S.blockIntervals[chatId]){clearInterval(S.blockIntervals[chatId]);}
+        S.blockIntervals[chatId]=setInterval(function(){
+            var chat=S.chats.find(function(c){return c.id===chatId;});
+            if(!chat || !S.blockedContacts[chatId]){clearInterval(S.blockIntervals[chatId]);return;}
+            if(!S.messages[chatId])S.messages[chatId]=[];
+            var texts=['你怎么不说话？','还在吗？','我想你了','你在忙吗？','今天过得怎么样？'];
+            var msg={id:genId(), text:texts[Math.floor(Math.random()*texts.length)], sender:'ai', time:new Date().toISOString(), extra:{}, read:false};
+            S.messages[chatId].push(msg);
+            chat.lastMsg=msg.text;
+            chat.lastTime=msg.time;
+            chat.unread=(chat.unread||0)+1;
+            save();
+            appendMessageToCurrentChat(chatId, msg);
+        }, 8000+Math.random()*15000);
+    }
+
+    function stopBlockedMessageTimer(chatId){
+        if(S.blockIntervals[chatId]){clearInterval(S.blockIntervals[chatId]);delete S.blockIntervals[chatId];}
+    }
+
+    function trySummary(chatId){
+        var msgs=S.messages[chatId]||[];
+        if(msgs.length>0&&msgs.length%50===0){
+            var texts=msgs.slice(-50).map(function(m){return m.text;}).join(' ');
+            var words=texts.split(/[\s,，。！？\n]+/).filter(function(w){return w.length>2;});
+            var freq={};
+            words.forEach(function(w){freq[w]=(freq[w]||0)+1;});
+            var top=Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(e){return e[0];});
+            if(top.length){
+                if(!S.memories[chatId]) S.memories[chatId]=[];
+                S.memories[chatId].push('总结: '+top.join(', '));
+                if(S.memories[chatId].length>20) S.memories[chatId].shift();
+                save();
+            }
+        }
+    }
+
+    function showContactProfile(chatId){
+        var chat=S.chats.find(function(c){return c.id===chatId;});
+        if(!chat)return;
+        var isBlocked=S.blockedContacts[chatId]||false;
+        modalContent.innerHTML=`
+            <div class="modal-title">${chat.name}</div>
+            <div class="form-group">
+                <label>头像</label>
+                <div class="avatar-edit" id="cpAvatar" style="width:72px;height:72px;">
+                    ${chat.avatarData?'':(chat.avatar||'🧑')}
+                    <input type="file" accept="image/*" id="cpAvatarUpload">
+                </div>
+            </div>
+            <div class="form-group"><label>名字</label><input id="cpName" value="${chat.name}"></div>
+            ${chat.isAI?`<div class="form-group"><label>动作描写</label><input type="checkbox" id="cpAction" ${chat.actionOn!==false?'checked':''}> 开启</div>`:''}
+            <div class="form-group"><label>状态</label><div style="font-size:14px;">${isBlocked?'已拉黑':'未拉黑'}</div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="cpSave" style="flex:1;">保存</button>
+                <button class="btn btn-secondary" id="cpBlock" style="flex:1;background:${isBlocked?'#34C759':'#ff3b30'};color:#fff;">${isBlocked?'取消拉黑':'拉黑'}</button>
+                <button class="btn btn-secondary" id="cpDelete" style="flex:1;background:#ff3b30;color:#fff;">删除</button>
+                <button class="btn btn-secondary" id="cpMemories" style="flex:1;background:#007AFF;color:#fff;">记忆管理</button>
+            </div>
+            <button class="btn btn-secondary" id="modalCloseBtn">关闭</button>
+        `;
+        modalOverlay.classList.add('open');
+
+        var avatar=modalContent.querySelector('#cpAvatar');
+        if(chat.avatarData){avatar.style.backgroundImage='url('+chat.avatarData+')';avatar.textContent='';}
+        modalContent.querySelector('#cpAvatarUpload').addEventListener('change',function(e){
+            var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){var data=ev.target.result;avatar.style.backgroundImage='url('+data+')';avatar.textContent='';chat.avatarData=data;save();};reader.readAsDataURL(file);
+        });
+
+        modalContent.querySelector('#cpSave').addEventListener('click',function(){
+            var name=modalContent.querySelector('#cpName').value.trim();if(name){chat.name=name;}
+            if(chat.isAI){chat.actionOn=modalContent.querySelector('#cpAction').checked;}
+            save();modalOverlay.classList.remove('open');renderTgContent();showToast('已更新');
+        });
+
+        modalContent.querySelector('#cpBlock').addEventListener('click',function(){
+            var newState=!isBlocked;
+            if(newState){S.blockedContacts[chatId]=true;showToast('已拉黑 '+chat.name);}
+            else{delete S.blockedContacts[chatId];showToast('已取消拉黑');}
+            save();modalOverlay.classList.remove('open');
+            renderTgContent();
+            if(newState && chat.isAI){startBlockedMessageTimer(chatId);}
+            else{stopBlockedMessageTimer(chatId);}
+        });
+
+        modalContent.querySelector('#cpDelete').addEventListener('click',function(){
+            if(confirm('确定删除联系人 '+chat.name+' 吗？')){
+                S.chats=S.chats.filter(function(c){return c.id!==chatId;});
+                delete S.messages[chatId];
+                delete S.memories[chatId];
+                delete S.blockedContacts[chatId];
+                stopBlockedMessageTimer(chatId);
+                if(S.currentChatId===chatId){S.currentChatId=null;tgTab='chats';}
+                save();
+                modalOverlay.classList.remove('open');
+                renderTgContent();
+                showToast('已删除');
+            }
+        });
+
+        modalContent.querySelector('#cpMemories').addEventListener('click',function(){
+            modalOverlay.classList.remove('open');
+            showMemoriesForChat(chatId);
+        });
+
+        modalContent.querySelector('#modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});
+    }
+
+    function showMemoriesForChat(chatId){
+        var mems=S.memories[chatId]||[];
+        var chat=S.chats.find(function(c){return c.id===chatId;});
+        var title=chat?chat.name:'对话';
+        modalContent.innerHTML=`
+            <div class="modal-title">🧠 记忆管理 - ${title}</div>
+            <div style="max-height:300px;overflow-y:auto;margin-bottom:12px;">
+                ${mems.length===0?'<div style="color:var(--text2);padding:12px;text-align:center;">暂无记忆</div>':
+                mems.map(function(m,i){
+                    return '<div class="memory-item"><input class="memory-edit-input" value="'+m.replace(/"/g,'&quot;')+'" data-idx="'+i+'"><span class="del" data-idx="'+i+'">✕</span></div>';
+                }).join('')}
+            </div>
+            <div class="form-group">
+                <label>添加新记忆</label>
+                <div style="display:flex;gap:6px;">
+                    <input type="text" id="newMemoryInput" placeholder="输入要记住的内容..." style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
+                    <button id="addMemoryBtn" style="padding:8px 16px;border-radius:8px;background:#007AFF;color:#fff;border:none;cursor:pointer;">添加</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" id="modalCloseBtn">关闭</button>
+        `;
+        modalOverlay.classList.add('open');
+
+        modalContent.querySelectorAll('.memory-edit-input').forEach(function(el){
+            el.addEventListener('change',function(){
+                var idx=parseInt(this.dataset.idx);
+                var val=this.value.trim();
+                if(val){S.memories[chatId][idx]=val;save();}
+            });
+        });
+
+        modalContent.querySelectorAll('.del').forEach(function(el){
+            el.addEventListener('click',function(){
+                var idx=parseInt(this.dataset.idx);
+                S.memories[chatId].splice(idx,1);
+                save();
+                showMemoriesForChat(chatId);
+            });
+        });
+
+        modalContent.querySelector('#addMemoryBtn').addEventListener('click',function(){
+            var input=modalContent.querySelector('#newMemoryInput');
+            var text=input.value.trim();
+            if(!text){showToast('请输入内容');return;}
+            if(!S.memories[chatId]) S.memories[chatId]=[];
+            S.memories[chatId].push(text);
+            save();
+            showMemoriesForChat(chatId);
+            showToast('记忆已添加');
+        });
+
+        modalContent.querySelector('#modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});
+    }
+
+    function showCreateAIChat(){
+        modalContent.innerHTML=`
+            <div class="modal-title">创建AI角色</div>
+            <div class="form-group"><label>名字</label><input id="newAIName" value="AI助手"></div>
+            <div class="form-group"><label>头像 (点击上传)</label><div style="display:flex;align-items:center;gap:10px;"><div id="newAIAvatarPreview" style="width:48px;height:48px;border-radius:50%;background:#007AFF;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;background-size:cover;background-position:center;cursor:pointer;position:relative;overflow:hidden;">🤖<input type="file" accept="image/*" id="newAIAvatarUpload" style="position:absolute;inset:0;opacity:0;cursor:pointer;"></div><span style="font-size:12px;color:var(--text2);">点击上传</span></div></div>
+            <div class="form-group"><label>人设</label><textarea id="newAIPersona" rows="3">你是一个友好的AI助手。</textarea></div>
+            <div class="form-group"><label>动作描写 (开启后角色会在()内描写动作)</label><input type="checkbox" id="newAIAction" checked> 开启</div>
+            <button class="btn btn-primary" id="createAIChatBtn">创建</button>
+            <button class="btn btn-secondary" id="modalCloseBtn">取消</button>
+        `;
+        modalOverlay.classList.add('open');
+        var avatarData=null;
+        document.getElementById('newAIAvatarUpload').addEventListener('change',function(e){
+            var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){avatarData=ev.target.result;var p=document.getElementById('newAIAvatarPreview');p.style.backgroundImage='url('+avatarData+')';p.textContent='';};reader.readAsDataURL(file);
+        });
+        document.getElementById('createAIChatBtn').addEventListener('click',function(){
+            var name=document.getElementById('newAIName').value.trim()||'AI助手';
+            var persona=document.getElementById('newAIPersona').value.trim()||'你是一个友好的AI助手。';
+            var actionOn=document.getElementById('newAIAction').checked;
+            var id=genId();
+            var chat={id:id,name:name,avatar:avatarData?'': '🤖',avatarData:avatarData||null,isAI:true,lastMsg:'开始聊天吧',lastTime:new Date().toISOString(),unread:0,persona:persona,actionOn:actionOn};
+            S.chats.push(chat);S.messages[id]=[];S.memories[id]=[];
+            save();modalOverlay.classList.remove('open');renderTgContent();showToast('已创建 '+name);
+        });
+        document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});
+    }
+
+    function showTransfer(chatId){
+        var amount=prompt('输入转账金额:');if(!amount)return;
+        var recipient=prompt('收款人:');if(!recipient)return;
+        var pwd=prompt('请输入支付密码:');if(pwd!==S.paymentPasscode){showToast('支付密码错误');return;}
+        var currency='USD';var note=prompt('备注(可选):')||'';
+        var transfer={recipient:recipient,amount:parseFloat(amount)||0,currency:currency,note:note};
+        var msg={id:genId(), text:'💰 转账 '+amount+' '+currency+' 给 '+recipient, sender:'mine', time:new Date().toISOString(), extra:{transfer:transfer}, read:true};
+        if(!S.messages[chatId]) S.messages[chatId]=[];
+        S.messages[chatId].push(msg);
+        var chat=S.chats.find(function(c){return c.id===chatId;});if(chat){chat.lastMsg='转账';chat.lastTime=msg.time;}
+        save();appendMessageToCurrentChat(chatId, msg);
+        showToast('✅ 转账成功');
+    }
+
+    function showTruthWheel(chatId){showToast('真心话轮盘');}
+    function takePhotoForChat(chatId){showToast('拍照发送');}
+    function sendImageToChat(chatId){showToast('发图片');}
+
+    function renderTgSettings(body){
+        body.innerHTML=`
+            <div style="padding:12px 0;">
+                <div style="text-align:center;margin-bottom:16px;">
+                    <div class="avatar-edit" id="tgProfileAvatar" style="width:72px;height:72px;">${S.profile.avatarData?'':(S.profile.avatar||'🧑')}<input type="file" accept="image/*" id="tgProfileUpload"></div>
+                    <div style="font-weight:600;font-size:18px;">${S.profile.name}</div>
+                    <div style="font-size:13px;color:var(--text2);">${S.profile.bio}</div>
+                </div>
+                <div class="setting-item"><span class="label"><span class="icon">🔑</span>API Key</span><input id="tgApiKey" value="${S.aiConfig.apiKey||''}" style="flex:1;margin-left:10px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);max-width:200px;"></div>
+                <div class="setting-item"><span class="label"><span class="icon">🧠</span>模型</span><input id="tgModel" value="${S.aiConfig.model||'deepseek-chat'}" style="flex:1;margin-left:10px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);max-width:150px;"></div>
+                <div class="setting-item"><span class="label"><span class="icon">🧬</span>人设</span><textarea id="tgPersona" rows="2" style="flex:1;margin-left:10px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);">${S.aiConfig.persona||''}</textarea></div>
+                <div class="setting-item"><span class="label"><span class="icon">👤</span>我的名字</span><input id="tgMyName" value="${S.profile.name||'我'}" style="flex:1;margin-left:10px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);"></div>
+                <div class="setting-item"><span class="label"><span class="icon">🌓</span>深色模式</span><div class="toggle ${S.theme==='dark'?'on':''}" id="tgThemeToggle"></div></div>
+                <div class="setting-item"><span class="label"><span class="icon">💳</span>支付密码</span><button id="tgChangePayPwd" style="padding:4px 12px;border-radius:8px;background:#007AFF;color:#fff;border:none;cursor:pointer;">修改</button></div>
+                <div class="setting-item"><span class="label"><span class="icon">🔊</span>声音克隆</span>
+                    <div style="display:flex;flex-direction:column;gap:4px;flex:1;max-width:200px;">
+                        <label style="font-size:12px;">音高 <span id="pitchDisplay">${S.voiceConfig.pitch.toFixed(1)}</span></label>
+                        <input type="range" id="voicePitch" min="0.5" max="2.0" step="0.1" value="${S.voiceConfig.pitch}" class="voice-slider">
+                        <label style="font-size:12px;">语速 <span id="rateDisplay">${S.voiceConfig.rate.toFixed(1)}</span></label>
+                        <input type="range" id="voiceRate" min="0.5" max="2.0" step="0.1" value="${S.voiceConfig.rate}" class="voice-slider">
+                        <div style="display:flex;gap:6px;margin-top:4px;">
+                            <button id="voiceTestBtn" style="padding:4px 12px;border-radius:8px;background:#007AFF;color:#fff;border:none;cursor:pointer;">试听</button>
+                            <label style="font-size:12px;display:flex;align-items:center;"><input type="checkbox" id="voiceEnabled" ${S.voiceConfig.enabled!==false?'checked':''}> 启用</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span class="label">🎙️ 克隆预设</span>
+                        <button id="addCloneBtn" class="btn btn-primary" style="padding:4px 12px;font-size:12px;">+ 新建</button>
+                    </div>
+                    <div id="cloneList" style="max-height:150px;overflow-y:auto;background:var(--bg-secondary);border-radius:8px;padding:4px;"></div>
+                </div>
+                <button class="btn btn-primary" id="tgSaveSettings" style="margin-top:12px;">保存设置</button>
+            </div>
+        `;
+
+        var avatar=body.querySelector('#tgProfileAvatar');
+        if(S.profile.avatarData){avatar.style.backgroundImage='url('+S.profile.avatarData+')';avatar.textContent='';}
+        body.querySelector('#tgProfileUpload').addEventListener('change',function(e){
+            var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){var data=ev.target.result;avatar.style.backgroundImage='url('+data+')';avatar.textContent='';S.profile.avatarData=data;save();};reader.readAsDataURL(file);
+        });
+        body.querySelector('#tgThemeToggle').addEventListener('click',function(){
+            this.classList.toggle('on');S.theme=this.classList.contains('on')?'dark':'light';document.documentElement.setAttribute('data-theme',S.theme);save();showToast(S.theme==='dark'?'深色模式':'浅色模式');
+        });
+        body.querySelector('#tgChangePayPwd').addEventListener('click',function(){changePaymentPasscode();});
+
+        var pitchSlider=body.querySelector('#voicePitch');
+        var rateSlider=body.querySelector('#voiceRate');
+        var pitchDisplay=body.querySelector('#pitchDisplay');
+        var rateDisplay=body.querySelector('#rateDisplay');
+        pitchSlider.addEventListener('input',function(){pitchDisplay.textContent=parseFloat(this.value).toFixed(1);});
+        rateSlider.addEventListener('input',function(){rateDisplay.textContent=parseFloat(this.value).toFixed(1);});
+        body.querySelector('#voiceTestBtn').addEventListener('click',function(){
+            var pitch=parseFloat(pitchSlider.value);var rate=parseFloat(rateSlider.value);
+            speakText('你好，这是声音克隆的试听效果，你可以调整音高和语速。',pitch,rate);
+        });
+
+        function renderCloneList(){
+            var list=body.querySelector('#cloneList');
+            if(!list)return;
+            list.innerHTML='';
+            if(!S.voiceClones || S.voiceClones.length===0){
+                list.innerHTML='<div style="color:var(--text2);padding:8px;text-align:center;font-size:13px;">暂无克隆预设</div>';
+            }else{
+                S.voiceClones.forEach(function(clone){
+                    var div=document.createElement('div');
+                    div.className='clone-item';
+                    var isActive = S.voiceConfig.cloneId === clone.id;
+                    div.innerHTML=`
+                        <span class="name">${clone.name}</span>
+                        <span class="badge">音高 ${clone.pitch.toFixed(1)} 语速 ${clone.rate.toFixed(1)}</span>
+                        <button class="btn btn-secondary" style="padding:2px 10px;font-size:12px;" data-id="${clone.id}">${isActive?'✓ 使用中':'使用'}</button>
+                        <span class="del-clone" data-id="${clone.id}">✕</span>
+                    `;
+                    var useBtn=div.querySelector('.btn');
+                    useBtn.addEventListener('click',function(e){
+                        e.stopPropagation();
+                        var id=this.dataset.id;
+                        S.voiceConfig.cloneId = (S.voiceConfig.cloneId === id) ? null : id;
+                        save();
+                        renderCloneList();
+                        showToast(S.voiceConfig.cloneId ? '已启用克隆声音' : '已关闭克隆声音');
+                    });
+                    var del=div.querySelector('.del-clone');
+                    del.addEventListener('click',function(e){
+                        e.stopPropagation();
+                        var id=this.dataset.id;
+                        if(confirm('删除克隆预设“'+S.voiceClones.find(c=>c.id===id).name+'”吗？')){
+                            S.voiceClones=S.voiceClones.filter(function(c){return c.id!==id;});
+                            if(S.voiceConfig.cloneId===id){S.voiceConfig.cloneId=null;}
+                            save();
+                            renderCloneList();
+                            showToast('已删除');
+                        }
+                    });
+                    list.appendChild(div);
+                });
+            }
+        }
+        renderCloneList();
+
+        body.querySelector('#addCloneBtn').addEventListener('click',function(){
+            modalContent.innerHTML=`
+                <div class="modal-title">新建声音克隆</div>
+                <div class="form-group"><label>预设名称</label><input id="cloneName" placeholder="例如：我的声音" value="克隆${S.voiceClones.length+1}"></div>
+                <div class="form-group"><label>上传音频 (参考)</label><input type="file" accept="audio/*" id="cloneAudioFile"></div>
+                <div class="form-group"><label>音高 <span id="clonePitchDisplay">1.0</span></label><input type="range" id="clonePitch" min="0.5" max="2.0" step="0.1" value="1.0" class="voice-slider"></div>
+                <div class="form-group"><label>语速 <span id="cloneRateDisplay">1.0</span></label><input type="range" id="cloneRate" min="0.5" max="2.0" step="0.1" value="1.0" class="voice-slider"></div>
+                <button class="btn btn-primary" id="cloneSaveBtn">保存</button>
+                <button class="btn btn-secondary" id="modalCloseBtn">取消</button>
+            `;
+            modalOverlay.classList.add('open');
+
+            var cpSlider=modalContent.querySelector('#clonePitch');
+            var crSlider=modalContent.querySelector('#cloneRate');
+            var cpDisplay=modalContent.querySelector('#clonePitchDisplay');
+            var crDisplay=modalContent.querySelector('#cloneRateDisplay');
+            cpSlider.addEventListener('input',function(){cpDisplay.textContent=parseFloat(this.value).toFixed(1);});
+            crSlider.addEventListener('input',function(){crDisplay.textContent=parseFloat(this.value).toFixed(1);});
+
+            modalContent.querySelector('#cloneAudioFile').addEventListener('change',function(e){
+                var file=e.target.files[0];
+                if(!file)return;
+                var reader=new FileReader();
+                reader.onload=function(ev){
+                    var audio=new Audio(ev.target.result);
+                    audio.onloadedmetadata=function(){
+                        var duration=audio.duration;
+                        var pitch=Math.min(1.8, Math.max(0.6, 1.0 + (duration/60 - 1)*0.2));
+                        var rate=Math.min(1.8, Math.max(0.6, 1.0 + (duration/60 - 0.5)*0.1));
+                        cpSlider.value=pitch; cpDisplay.textContent=pitch.toFixed(1);
+                        crSlider.value=rate; crDisplay.textContent=rate.toFixed(1);
+                        showToast('已根据音频时长调整音高语速');
+                    };
+                    audio.load();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            modalContent.querySelector('#cloneSaveBtn').addEventListener('click',function(){
+                var name=modalContent.querySelector('#cloneName').value.trim()||'未命名';
+                var pitch=parseFloat(cpSlider.value);
+                var rate=parseFloat(crSlider.value);
+                S.voiceClones.push({id:genId(), name:name, pitch:pitch, rate:rate});
+                save();
+                modalOverlay.classList.remove('open');
+                renderCloneList();
+                showToast('✅ 克隆预设已保存');
+            });
+            modalContent.querySelector('#modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});
+        });
+
+        body.querySelector('#tgSaveSettings').addEventListener('click',function(){
+            S.aiConfig.apiKey=body.querySelector('#tgApiKey').value.trim();
+            S.aiConfig.model=body.querySelector('#tgModel').value.trim()||'deepseek-chat';
+            S.aiConfig.persona=body.querySelector('#tgPersona').value.trim()||'你是一个友好的AI助手。';
+            S.profile.name=body.querySelector('#tgMyName').value.trim()||'我';
+            S.voiceConfig.pitch=parseFloat(pitchSlider.value);
+            S.voiceConfig.rate=parseFloat(rateSlider.value);
+            S.voiceConfig.enabled=body.querySelector('#voiceEnabled').checked;
+            S.chats.forEach(function(c){if(c.isAI){c.name=S.aiConfig.aiName||'AI助手';}});
+            save();renderTgContent();showToast('设置已保存');
+        });
+    }
+
+    // ===== 论坛（修复：刷新去掉确认弹窗） =====
+    var forumRefreshLock=false;
+    function renderForum(){appTitle.textContent='论坛';appBack.style.display='block';appRight.style.display='none';var container=document.createElement('div');container.style.cssText='padding:0;';var header=document.createElement('div');header.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;';header.innerHTML='<span style="font-size:18px;font-weight:600;">📰 论坛</span><div style="display:flex;gap:8px;"><button id="forumRefreshBtn" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--text);padding:4px;">🔄</button><button id="forumNewBtn" style="font-size:24px;background:none;border:none;cursor:pointer;color:var(--text);padding:4px;">✏️</button></div>';container.appendChild(header);var feed=document.createElement('div');feed.id='forumFeed';container.appendChild(feed);appBody.appendChild(container);function renderPosts(){feed.innerHTML='';var posts=S.posts.slice(0,50);if(posts.length===0){feed.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);">暂无帖子</div>';return;}posts.forEach(function(p){var div=document.createElement('div');div.className='forum-post';var isAI=p.author==='AI助手'||p.author===S.aiConfig.aiName;var avatarData=isAI?S.aiConfig.aiAvatarData:(p.author===S.profile.name?S.profile.avatarData:null);var avatarEmoji=isAI?(S.aiConfig.aiAvatar||'🤖'):(p.avatar||'🧑');var bgColor=isAI?'#007AFF':'#34C759';var style=avatarData?'background-image:url('+avatarData+');background-size:cover;': 'background:'+bgColor+';';div.innerHTML='<div class="header"><div class="avatar" style="'+style+'">'+(avatarData?'':avatarEmoji)+'</div><div class="name">'+p.author+'</div><div class="time">'+formatDate(new Date(p.time))+'</div></div><div class="title">'+(p.title||'无标题')+'</div><div class="body">'+p.content+(p.image?'<br><img src="'+p.image+'">':'')+'</div><div class="actions"><span class="like-btn" data-id="'+p.id+'">❤️ '+(p.likes||0)+'</span><span class="comment-toggle" data-id="'+p.id+'">💬 '+((p.comments||[]).length)+'</span><span class="share-btn" data-id="'+p.id+'">↗️ 分享</span></div><div class="comments" id="comments-'+p.id+'" style="'+(p._showComments?'':'display:none;')+'">'+(p.comments||[]).map(function(c){var cIsAI=c.author===S.aiConfig.aiName;var cData=cIsAI?S.aiConfig.aiAvatarData:(c.author===S.profile.name?S.profile.avatarData:null);var cEmoji=cIsAI?(S.aiConfig.aiAvatar||'🤖'):(c.avatar||'🧑');var cBg=cIsAI?'#007AFF':'#34C759';var cStyle=cData?'background-image:url('+cData+');background-size:cover;': 'background:'+cBg+';';return '<div class="c"><div class="avatar" style="'+cStyle+'">'+(cData?'':cEmoji)+'</div><div><span style="font-weight:600;">'+c.author+'</span> '+c.text+' <span style="font-size:10px;color:var(--text2);">'+formatDate(new Date(c.time))+'</span></div></div>';}).join('')+'<div class="comment-input"><input type="text" placeholder="写评论..." id="fcInput-'+p.id+'"><button data-id="'+p.id+'" class="fcSubmit">发送</button></div></div>';feed.appendChild(div);var like=div.querySelector('.like-btn');var lastClick=0,timeout=null;like.addEventListener('click',function(){var now=Date.now();if(now-lastClick<300){clearTimeout(timeout);var post=S.posts.find(function(pp){return pp.id===p.id;});if(post){post.likes=(post.likes||0)+1;save();renderPosts();}}else{timeout=setTimeout(function(){var post=S.posts.find(function(pp){return pp.id===p.id;});if(post){post.liked=!post.liked;post.likes=(post.likes||0)+(post.liked?1:-1);if(post.likes<0)post.likes=0;save();renderPosts();}},300);}lastClick=now;});div.querySelector('.comment-toggle').addEventListener('click',function(){var id=this.dataset.id;var post=S.posts.find(function(pp){return pp.id===id;});if(post){post._showComments=!post._showComments;save();renderPosts();}});div.querySelector('.fcSubmit').addEventListener('click',function(){var id=this.dataset.id;var post=S.posts.find(function(pp){return pp.id===id;});if(!post)return;var input=div.querySelector('#fcInput-'+id);var text=input.value.trim();if(!text)return;var comment={id:genId(),author:S.profile.name||'我',avatar:S.profile.avatar||'🧑',avatarData:S.profile.avatarData||null,text:text,time:new Date().toISOString()};if(!post.comments)post.comments=[];post.comments.push(comment);save();renderPosts();if(Math.random()<0.3){setTimeout(function(){var aiC={id:genId(),author:S.aiConfig.aiName||'AI助手',avatar:S.aiConfig.aiAvatar||'🤖',avatarData:S.aiConfig.aiAvatarData||null,text:['有意思！','我同意','说得对','哈哈'][Math.floor(Math.random()*4)],time:new Date().toISOString()};post.comments.push(aiC);save();renderPosts();showToast('AI回复了评论');},1500);}});div.querySelector('.fcSubmit').addEventListener('keydown',function(e){if(e.key==='Enter')e.target.click();});div.querySelector('.share-btn').addEventListener('click',function(){var id=this.dataset.id;var post=S.posts.find(function(pp){return pp.id===id;});if(!post)return;showShareModal(post);});});}document.getElementById('forumRefreshBtn').addEventListener('click',function(){if(forumRefreshLock)return;forumRefreshLock=true;generateAIPosts();setTimeout(function(){forumRefreshLock=false;},3000);});document.getElementById('forumNewBtn').addEventListener('click',function(){modalContent.innerHTML='<div class="modal-title">发布帖子</div><div class="form-group"><label>标题</label><input id="fpTitle" placeholder="标题"></div><div class="form-group"><label>内容</label><textarea id="fpContent" rows="4" placeholder="内容..."></textarea></div><div class="form-group"><label>图片 (可选)</label><input type="file" accept="image/*" id="fpImage"></div><div id="fpPreview"></div><button class="btn btn-primary" id="fpSubmit">发布</button><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';modalOverlay.classList.add('open');var imageData=null;document.getElementById('fpImage').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){imageData=ev.target.result;document.getElementById('fpPreview').innerHTML='<img src="'+imageData+'" style="max-width:100%;max-height:150px;border-radius:8px;margin-top:6px;">';};reader.readAsDataURL(file);});document.getElementById('fpSubmit').addEventListener('click',function(){var title=document.getElementById('fpTitle').value.trim()||'无标题';var content=document.getElementById('fpContent').value.trim();if(!content){showToast('请输入内容');return;}var post={id:genId(),author:S.profile.name||'我',avatar:S.profile.avatar||'🧑',avatarData:S.profile.avatarData||null,title:title,content:content,image:imageData||null,time:new Date().toISOString(),likes:0,liked:false,comments:[],_showComments:false};S.posts.unshift(post);save();modalOverlay.classList.remove('open');renderPosts();showToast('帖子已发布');if(Math.random()<0.4){setTimeout(function(){var aiC={id:genId(),author:S.aiConfig.aiName||'AI助手',avatar:S.aiConfig.aiAvatar||'🤖',avatarData:S.aiConfig.aiAvatarData||null,text:['太棒了！','赞！','这个想法很有趣。','支持！'][Math.floor(Math.random()*4)],time:new Date().toISOString()};post.comments.push(aiC);save();renderPosts();showToast('AI评论了你的帖子');},2000);}});document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});});renderPosts();}
+    function generateAIPosts(){var names=['星野','森崎','月岛','苍井','风间','秋山','水无月','白川'];var titles=['关于今天的思考','午后的随笔','深夜的对话','窗外的风景','一首小诗','日常的碎片','雨的回忆','光的轨迹'];var contents=['今天天气很好，适合散步。','最近在读一本有趣的书。','夜晚的星空让人感到宁静。','窗外的树叶在风中摇曳。','想写点什么，但不知从何说起。','生活中有很多细小的美好。','偶尔会想起一些遥远的事。','未来总是充满未知与期待。'];for(var i=0;i<2;i++){var name=names[Math.floor(Math.random()*names.length)];var title=titles[Math.floor(Math.random()*titles.length)];var content=contents[Math.floor(Math.random()*contents.length)]+' '+contents[Math.floor(Math.random()*contents.length)];var likes=Math.floor(Math.random()*50)+5;var comments=[];var numComments=Math.floor(Math.random()*5)+1;for(var j=0;j<numComments;j++){var cNames=['小野','田中','铃木','山本','中村','小林','加藤','佐藤'];comments.push({id:genId(),author:cNames[Math.floor(Math.random()*cNames.length)],avatar:'👤',avatarData:null,text:['同意！','说的对','哈哈','有意思','+1','好赞','确实','不错'][Math.floor(Math.random()*8)],time:new Date(Date.now()-Math.random()*3600000).toISOString()});}var post={id:genId(),author:name,avatar:'👤',avatarData:null,title:title,content:content,image:null,time:new Date(Date.now()-Math.random()*86400000).toISOString(),likes:likes,liked:false,comments:comments,_showComments:false};S.posts.unshift(post);}save();renderForum();showToast('已生成2个新帖子');}
+    // 修复：分享帖子选择AI助手时处理可能不存在的情况
+    function showShareModal(post){var contacts=S.chats.slice(0,6);modalContent.innerHTML='<div class="modal-title">↗️ 分享帖子</div><div style="font-size:13px;color:var(--text2);margin-bottom:8px;">选择分享给谁：</div><div style="max-height:200px;overflow-y:auto;">'+contacts.map(function(c){return '<div class="share-contact" data-id="'+c.id+'" style="padding:10px;border-radius:12px;background:var(--bg-secondary);margin-bottom:4px;cursor:pointer;display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">'+(c.avatar||'👤')+'</span><span>'+c.name+'</span></div>';}).join('')+'<div class="share-contact" data-id="ai" style="padding:10px;border-radius:12px;background:var(--bg-secondary);margin-bottom:4px;cursor:pointer;display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">🤖</span><span>AI助手</span></div></div><div class="form-group"><label>捎一句话 (可选)</label><input id="shareNote" placeholder="输入你想说的话..."></div><button class="btn btn-primary" id="shareConfirm">完成发送</button><button class="btn btn-secondary" id="modalCloseBtn">取消</button>';modalOverlay.classList.add('open');var selected=null;document.querySelectorAll('.share-contact').forEach(function(el){el.addEventListener('click',function(){document.querySelectorAll('.share-contact').forEach(function(e){e.style.background='var(--bg-secondary)';});this.style.background='var(--border)';selected=this.dataset.id;});});document.getElementById('shareConfirm').addEventListener('click',function(){if(!selected){showToast('请选择分享人');return;}var note=document.getElementById('shareNote').value.trim();var chatId=selected==='ai'?(S.chats.find(function(c){return c.isAI && c.id;})||{}).id:selected;if(!chatId){showToast('聊天不存在');return;}var shareData={author:post.author,content:post.content,note:note||''};var msg={id:genId(),text:'📰 分享了一个帖子',sender:'mine',time:new Date().toISOString(),extra:{sharedPost:shareData},read:true};if(!S.messages[chatId])S.messages[chatId]=[];S.messages[chatId].push(msg);var chat=S.chats.find(function(c){return c.id===chatId;});if(chat){chat.lastMsg='分享了一个帖子';chat.lastTime=msg.time;}save();modalOverlay.classList.remove('open');showToast('✅ 已分享');if(chat&&chat.isAI){setTimeout(function(){var reply=note?'收到你的分享和留言："'+note+'"，很有意思的帖子！':'收到分享，很有意思！';var msg2={id:genId(),text:reply,sender:'ai',time:new Date().toISOString(),extra:{},read:false};S.messages[chatId].push(msg2);chat.lastMsg=reply;chat.lastTime=msg2.time;chat.unread=(chat.unread||0)+1;save();},1500);}});document.getElementById('modalCloseBtn').addEventListener('click',function(){modalOverlay.classList.remove('open');});}
+
+    // ===== 初始化 =====
+    function init(){
+        document.documentElement.setAttribute('data-theme',S.theme);
+        if(S.wallpaper.lock){lockScreen.style.backgroundImage='url('+S.wallpaper.lock+')';lockScreen.style.backgroundSize='cover';}
+        if(S.wallpaper.home){desk.style.backgroundImage='url('+S.wallpaper.home+')';desk.style.backgroundSize='cover';}
+        // 初始化语音克隆
+        if(!S.voiceClones) S.voiceClones=[];
+        if(!S.chats.find(function(c){return c.isAI;})){var id=genId();S.chats.push({id:id,name:S.aiConfig.aiName||'AI助手',avatar:S.aiConfig.aiAvatar||'🤖',avatarData:S.aiConfig.aiAvatarData||null,isAI:true,lastMsg:'开始聊天吧',lastTime:new Date().toISOString(),unread:0,persona:S.aiConfig.persona||'你是一个友好的AI助手。',actionOn:true});S.messages[id]=[];S.memories[id]=[];save();}
+        if(!S.unlocked){lockScreen.classList.remove('hidden');desk.classList.remove('active');pwd='';updateDots();document.getElementById('lockError').textContent='';}else{lockScreen.classList.add('hidden');desk.classList.add('active');renderDesktop();}
+        modalOverlay.addEventListener('click',function(e){if(e.target===modalOverlay){modalOverlay.classList.remove('open');}});
+        for(var id in S.blockedContacts){if(S.blockedContacts[id]){startBlockedMessageTimer(id);}}
+        if('speechSynthesis' in window){speechSynthesis.getVoices();}
+        window.addEventListener('beforeunload',function(){for(var key in S.blockIntervals){clearInterval(S.blockIntervals[key]);}});
+        window.showToast=showToast;
+        console.log('📱 小手机已启动 (修复所有致命错误和功能性问题)');
+    }
+    document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
